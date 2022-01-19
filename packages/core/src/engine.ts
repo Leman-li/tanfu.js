@@ -1,6 +1,7 @@
 import set from 'lodash.set';
 import get from 'lodash.get'
 import { assignExcludeFns } from './util';
+import Plugin from './plugin';
 type ElementId = string;
 type DependenceKey = string;
 type InJectCallBackName = string;
@@ -10,19 +11,43 @@ type ForceUpdate = () => void;
 type States = Record<ElementId, any>;
 
 
+export interface Engine extends Pick<CoreEngine, 'setState' | 'getState' | 'watchElement' | 'injectCallback'> {
+
+}
 
 
 
-export default class Engine {
+export default class CoreEngine {
     _watchFns: Record<ElementId, Record<DependenceKey, Array<WatchFn>>>
     _callBackFns: Record<ElementId, Record<InJectCallBackName, Array<InJectCallBackFn>>>
     _forceUpdate: Record<ElementId, ForceUpdate>
     _store: Record<string, any>
+    _plugins: Map<string | Plugin, Plugin>
     constructor() {
         this._watchFns = {};
         this._callBackFns = {};
         this._forceUpdate = {};
-        this._store = {}
+        this._store = {};
+        this._plugins = new Map()
+    }
+
+    toEngine(): Engine {
+        return {
+            watchElement: this.watchElement.bind(this),
+            setState: this.setState.bind(this),
+            injectCallback: this.injectCallback.bind(this),
+            getState: this.getState.bind(this)
+        }
+    }
+
+    /** 注册plugin */
+    registerPlugin(plugins: Plugin[]) {
+        plugins.forEach(plugin => {
+            this._plugins.set(plugin.getName() || plugin, plugin)
+        })
+        this._plugins.forEach(plugin => {
+            plugin.apply(this.toEngine())
+        })
     }
 
     /** 设置状态 */
@@ -51,7 +76,7 @@ export default class Engine {
     }
 
     /** 插入回调 */
-    injectCallBack(elementId: string, fnName: string, fn: (...args: any) => void) {
+    injectCallback(elementId: string, fnName: string, fn: (...args: any) => void) {
         if (!this._callBackFns[elementId]) this._callBackFns[elementId] = {}
         if (!this._callBackFns[elementId][fnName]) this._callBackFns[elementId][fnName] = []
         this._callBackFns[elementId][fnName].push(fn)

@@ -47,23 +47,31 @@ importers:
       '@testing-library/jest-dom': ^5.15.1
       '@testing-library/react': ^12.1.2
       '@types/jest': ^27.0.3
+      '@types/lodash.get': '*'
+      '@types/lodash.set': '*'
       '@umijs/fabric': ^2.8.1
       '@umijs/test': ^3.0.5
       dumi: ^1.1.0
       father-build: ^1.17.2
       gh-pages: ^3.0.0
       lint-staged: ^10.0.7
+      lodash.get: ^4.4.2
+      lodash.set: ^4.3.2
       prettier: ^2.2.1
       react: ^16.12.0 || ^17.0.0
       tanfu-core: '*'
       yorkie: ^2.0.0
     dependencies:
+      lodash.get: registry.nlark.com/lodash.get/4.4.2
+      lodash.set: registry.nlark.com/lodash.set/4.3.2
       react: registry.npmmirror.com/react/17.0.2
       tanfu-core: link:../core
     devDependencies:
       '@testing-library/jest-dom': registry.npmmirror.com/@testing-library/jest-dom/5.16.1
       '@testing-library/react': registry.npmmirror.com/@testing-library/react/12.1.2_react@17.0.2
       '@types/jest': registry.npmmirror.com/@types/jest/27.4.0
+      '@types/lodash.get': registry.npmmirror.com/@types/lodash.get/4.4.6
+      '@types/lodash.set': registry.npmmirror.com/@types/lodash.set/4.3.6
       '@umijs/fabric': registry.npmmirror.com/@umijs/fabric/2.10.1
       '@umijs/test': registry.npmmirror.com/@umijs/test/3.5.20
       dumi: registry.npmmirror.com/dumi/1.1.38_react@17.0.2
