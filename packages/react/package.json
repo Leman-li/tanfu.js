@@ -1,7 +1,6 @@
 {
-  "private": true,
   "name": "tanfu-react",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.2",
   "scripts": {
     "start": "dumi dev",
     "docs:build": "dumi build",
@@ -11,8 +10,10 @@
     "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
     "test": "umi-test",
     "test:coverage": "umi-test --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "publish:alpha": "npm publish --tag=alpha --registry=https://registry.npmjs.org"
   },
+  "files": ["es"],
   "module": "es/index.js",
   "typings": "es/index.d.ts",
   "gitHooks": {
