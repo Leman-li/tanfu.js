@@ -1,4 +1,4 @@
-import { Engine } from "./engine";
+import { Engine, ViewModel } from "./engine";
 
 export default class Plugin {
 
@@ -7,7 +7,7 @@ export default class Plugin {
 
     }
 
-    apply(engine: Engine) {
+    apply(engine:Engine) {
 
     }
 }

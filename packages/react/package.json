@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "react",
+  "name": "tanfu-react",
   "version": "1.0.0",
   "scripts": {
     "start": "dumi dev",
