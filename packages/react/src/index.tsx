@@ -60,7 +60,7 @@ type UIComponent<P> = React.NamedExoticComponent<React.ComponentProps<React.Comp
 
 type Element<P> = UIComponent<P> & {
     /** 扩展UI */
-    extend: (args: { elements?: Record<string, React.ComponentType<any>>, controllers?: Controller[] }) => Element<P>
+    extend<VM extends Record<string, any>>(args: { elements?: { [K in keyof VM]?: React.ComponentType<VM[K]> }, controllers?: Controller[] }): Element<P>
 }
 
 /** 创建视图元素 */
@@ -135,6 +135,7 @@ function createElement<P = {}>(
     })
     const ReturnElement = Element as Element<P>;
     ReturnElement.extend = function ({ elements = {}, controllers: extendControllers = [] }) {
+        // @ts-ignore
         return createElement([...controllers, ...extendControllers], UI, ReactView, elements)
     }
     let displayNamePrefix = 'Element_UI'

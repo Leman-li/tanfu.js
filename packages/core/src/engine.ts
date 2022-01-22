@@ -121,13 +121,17 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
     setState(states: SetStatesAction<VM>) {
         Object.keys(states).forEach(elementId => {
             const preState: Record<string, any> = get(this._store, elementId, {});
-            set(this._store, elementId, produce(preState, draft => {
+            const nextState = produce(preState, draft => {
                 // @ts-ignore
                 Object.keys(states[elementId]).forEach(propName => {
                     // @ts-ignore
-                    if (typeof states[elementId][propName] !== 'function') draft[propName] = states[elementId][propName]
+                    if (typeof states[elementId][propName] !== 'function' && draft[propName] !== states[elementId][propName])
+                        // @ts-ignore
+                        draft[propName] = states[elementId][propName]
                 })
-            }));
+            })
+            if (preState === nextState) return;
+            set(this._store, elementId, nextState);
             // 精确更新
             this._forceUpdate[elementId]?.()
         })
