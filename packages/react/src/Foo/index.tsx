@@ -43,13 +43,21 @@ class ControllerA extends Controller {
 
 const Root = createContainer(function () {
     return (
+        <React.StrictMode>
         <div>
             <A elementId='elementA' />
             <Template elementId='myelementId' />
             <B elementId='elementB' />
         </div>
+        </React.StrictMode>
     )
-}, [new ControllerA()])
+}, [new ControllerA()]).extend({
+    // elements:{
+    //     'elementA': function({text}){
+    //         return <div>这是从写的A{text}</div>
+    //     }
+    // }
+})
 
 type ViewModel = {
     elementA: Aprops,

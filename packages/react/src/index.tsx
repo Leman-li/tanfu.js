@@ -6,6 +6,8 @@ import get from 'lodash.get'
 const Tanfu: Tanfu = TanfuCore
 // 重写element方法，使用createUI包裹
 Tanfu.element = function (elementId: string, ui: React.ComponentType<any>) {
+    const Element = createUI(ui);
+    // Element.displayName = elementId
     // @ts-ignore
     Tanfu[GLOBAL_ELEMENTS_KEY][elementId] = createUI(ui)
 }
@@ -28,11 +30,18 @@ export function Template(props: { elementId: string, children?: React.ReactChild
     return <>{RenderUI ? <RenderUI elementId={elementId} /> : children}</>
 }
 
+interface ReactViewProps {
+    children: React.ReactChild;
+    controllers?: Controller[];
+    elements?: Record<string, React.ComponentType<any>>;
+}
+
 /** 包裹React视图组件，生成CoreEngine并执行控制器 */
-export function ReactView({ children, controllers = [] }: { children: React.ReactChild, controllers?: Controller[] }) {
+export function ReactView({ children, controllers = [], elements = {} }: ReactViewProps) {
     const engine = useMemo(() => {
         const engine = new CoreEngine();
         engine.useControllers(controllers);
+        engine.registerElements(elements)
         return engine;
     }, [])
     return <ReactViewContext.Provider value={engine}>{children}</ReactViewContext.Provider>
@@ -41,12 +50,26 @@ export function ReactView({ children, controllers = [] }: { children: React.Reac
 ReactView.displayName = '$REACT_VIEW$'
 
 /** 创建容器组件 */
-export function createContainer<P = {}>(UI: React.ComponentType<P>, controllers: Controller[]) {
-    return createElement(controllers, UI, ReactView)
+export function createContainer<P = {}>(UI: React.ComponentType<P>, controllers: Controller[] = []): ContainerComponent<P> {
+    return createElement(controllers, UI, ReactView);
+}
+
+type ContainerComponent<P> = Element<P>
+
+type UIComponent<P> = React.NamedExoticComponent<React.ComponentProps<React.ComponentType<P>> & { elementId?: string }>
+
+type Element<P> = UIComponent<P> & {
+    /** 扩展UI */
+    extend: (args: { elements?: Record<string, React.ComponentType<any>>, controllers?: Controller[] }) => Element<P>
 }
 
 /** 创建视图元素 */
-function createElement<P = {}>(controllers: Controller[], UI: React.ComponentType<P>, ReactView: React.ComponentType<any> = React.Fragment) {
+function createElement<P = {}>(
+    controllers: Controller[],
+    UI: React.ComponentType<P>,
+    ReactView: React.ComponentType<any> = React.Fragment,
+    elements?: ReactViewProps['elements']
+): Element<P> {
     const Element = React.memo(function (props: React.ComponentProps<typeof UI> & { elementId?: string }) {
         const { elementId, ...others } = props
         // 获取engien
@@ -101,15 +124,29 @@ function createElement<P = {}>(controllers: Controller[], UI: React.ComponentTyp
             }
         }, [])
         const RenderUI = engine?._elements?.[elementId || ''] || UI
-        const reactViewProps: { controllers?: Controller[] } = {};
-        if (ReactView.displayName === '$REACT_VIEW$') reactViewProps['controllers'] = controllers
+        RenderUI.displayName = elementId
+        // @ts-ignore
+        const reactViewProps: ReactViewProps = {};
+        if (ReactView.displayName === '$REACT_VIEW$') {
+            reactViewProps['controllers'] = controllers
+            reactViewProps['elements'] = elements
+        }
         return <ReactView {...reactViewProps}><RenderUI {...elementProps} /></ReactView>;
     })
-    return Element;
+    const ReturnElement = Element as Element<P>;
+    ReturnElement.extend = function ({ elements = {}, controllers: extendControllers = [] }) {
+        return createElement([...controllers, ...extendControllers], UI, ReactView, elements)
+    }
+    let displayNamePrefix = 'Element_UI'
+    if (ReactView.displayName === '$REACT_VIEW$') {
+        displayNamePrefix = 'Container_UI'
+    }
+    ReturnElement.displayName = displayNamePrefix
+    return ReturnElement;
 }
 
 /** 创建UI组件 */
-export function createUI<P = {}>(UI: React.ComponentType<P>) {
+export function createUI<P = {}>(UI: React.ComponentType<P>): UIComponent<P> {
     return createElement([], UI)
 }
 
