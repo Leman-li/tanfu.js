@@ -31,16 +31,18 @@ yarn add tanfu-react
 ## 🔨 Usage
 
 ```jsx
-import { createContainer, createUI, controller } from 'tanfu-react';
+import { createContainer, createUI, Controller } from 'tanfu-react';
 
+// Build UI component A
 const A = createUI(function({ text }){
     return <div>A{text}</div>
 })
-
+// Build UI component B
 const B = createUI(function({ onClick }){
     return <div onClick={onClick}> PRESS B </div>
 })
 
+// Inherit the Controller class and implement the Apply method for consumption by container components
 class AppController extends Controller {
 
     apply(engine){
@@ -54,6 +56,7 @@ class AppController extends Controller {
     }
 }
 
+// Build Container component C
 const App = createContainer(function(){
     return (
         <div>

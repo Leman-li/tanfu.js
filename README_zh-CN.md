@@ -32,16 +32,19 @@ yarn add tanfu-react
 ## 🔨 示例
 
 ```jsx
-import { createContainer, createUI, controller } from 'tanfu-react';
+import { createContainer, createUI, Controller } from 'tanfu-react';
 
+// 构建 ui 组件 A
 const A = createUI(function({ text }){
     return <div>A{text}</div>
 })
 
+// 构建 ui 组件 B
 const B = createUI(function({ onClick }){
     return <div onClick={onClick}> PRESS B </div>
 })
 
+// 继承 Controller 类并实现 apply 方法，供容器组件消费
 class AppController extends Controller {
 
     apply(engine){
@@ -55,6 +58,8 @@ class AppController extends Controller {
     }
 }
 
+
+// 构建容器组件
 const App = createContainer(function(){
     return (
         <div>
