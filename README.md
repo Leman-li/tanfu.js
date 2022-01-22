@@ -1,4 +1,4 @@
-[English](./README_zh-CN.md) | 简体中文
+English | [简体中文](./README_zh-CN.md)
 
 # Tanfu
 
