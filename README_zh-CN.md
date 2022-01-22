@@ -19,6 +19,53 @@
 * **定制化开发**，在不污染原有的视图和逻辑情况下，可通过简单的方法完成定制逻辑/视图的开发
 * **插件机制**，插件机制可以为框架注入全局功能和视图渲染
 
+## 📦 安装
+
+```bash
+npm install tanfu-react --save
+```
+
+```bash
+yarn add tanfu-react
+```
+
+## 🔨 示例
+
+```jsx
+import { createContainer, createUI, controller } from 'tanfu-react';
+
+const A = createUI(function({ text }){
+    return <div>A{text}</div>
+})
+
+const B = createUI(function({ onClick }){
+    return <div onClick={onClick}> PRESS B </div>
+})
+
+class AppController extends Controller {
+
+    apply(engine){
+        engine.injectCallback('elementB', 'onClick', function(){
+            engine.setState({
+                elementA: {
+                    text: 'B clicked'
+                }
+            })
+        })
+    }
+}
+
+const App = createContainer(function(){
+    return (
+        <div>
+          <A elementId="elementA">
+          <B elementId="elementB">
+        </div>
+    )
+}, [new AppController()])
+
+```
+
 ## License
 
 [MIT](https://tldrlegal.com/license/mit-license)
