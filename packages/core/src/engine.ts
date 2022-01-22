@@ -1,7 +1,7 @@
 import set from 'lodash.set';
 import get from 'lodash.get';
 import { produce } from 'immer'
-import Plugin from './plugin';
+import Controller from './controller';
 
 // 定义元素id类型
 type ElementId<VM extends ViewModel = ViewModel> = StringKeys<keyof VM>;
@@ -55,17 +55,18 @@ type PickNotFunction<T> = {
     [K in keyof T as (T[K] extends (Function | undefined) ? never : K)]: T[K]
 }
 
-
+/** 暴露给控制器 */
 export interface Engine<VM extends ViewModel = ViewModel> extends Pick<CoreEngine<VM>, 'setState' | 'getState' | 'watchElement' | 'injectCallback' | 'didMount' | 'willUnmount'> {
 
 }
 
+/** 核心引擎 */
 export default class CoreEngine<VM extends ViewModel = ViewModel> {
     _watchFns: Record<string, Record<DependencyProperty, Array<WatchFunction>>>
     _callBackFns: Record<string, Record<InJectCallBackName, Array<InJectCallBackFunction>>>
     _forceUpdate: Partial<Record<ElementId<VM>, ForceUpdate>>
     _store: Record<string, any>
-    _plugins: Map<string | Plugin, Plugin>
+    _controllers: Map<string | Controller, Controller>
     _elements: Partial<Record<ElementId<VM>, any>>
     _didMountFns: Record<string, Array<DidMountFunction>>
     _willUnmountFns: Record<string, Array<WillUnmountFunction>>
@@ -74,7 +75,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         this._callBackFns = {};
         this._forceUpdate = {};
         this._store = {};
-        this._plugins = new Map();
+        this._controllers = new Map();
         this._elements = {}
         this._didMountFns = {}
         this._willUnmountFns = {}
@@ -91,11 +92,13 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         }
     }
 
+    /** 组件加载完成 */
     didMount(elementId: ElementId<VM>, fn: DidMountFunction) {
         if (!this._didMountFns[elementId]) this._didMountFns[elementId] = [];
         this._didMountFns[elementId].push(fn)
     }
 
+    /** 组件卸载完成 */
     willUnmount(elementId: ElementId<VM>, fn: WillUnmountFunction) {
         if (!this._willUnmountFns[elementId]) this._willUnmountFns[elementId] = [];
         this._willUnmountFns[elementId].push(fn)
@@ -106,12 +109,12 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         this._elements = Object.assign({}, this._elements, elements)
     }
 
-    /** 注册plugin */
-    registerPlugin(plugins: Plugin[]) {
-        plugins.forEach(plugin => {
-            this._plugins.set(plugin.getName() || plugin, plugin)
+    /** 使用controller */
+    useControllers(controllers: Controller[]) {
+        controllers.forEach(controller => {
+            this._controllers.set(controller.getName() || controller, controller)
         })
-        this._plugins.forEach(plugin => plugin.apply(this.toEngine() as Engine))
+        this._controllers.forEach(controller => controller.apply(this.toEngine() as Engine, controller))
     }
 
     /** 设置状态 */
@@ -136,7 +139,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
     }
 
     /** 监听元素属性变化 */
-    watchElement(elementId: ElementId<VM>, fn: WatchFunction, deps: string[]) {
+    watchElement<E extends ElementId<VM>>(elementId: E, fn: WatchFunction, deps: StringKeys<keyof PickNotFunction<VM[E]>>[]) {
         if (!this._watchFns[elementId]) this._watchFns[elementId] = {}
         deps?.forEach(dep => {
             if (!this._watchFns[elementId][dep]) this._watchFns[elementId][dep] = []

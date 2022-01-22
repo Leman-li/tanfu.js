@@ -1,10 +1,22 @@
 import React from 'react';
-import { createUI, createContainer, Engine, Plugin } from '../index'
+import Tanfu, { createUI, createContainer, Engine, Controller, Template } from '../index'
 export default ({ title }: { title: string }) => <Root />;
 
+interface ControllerIntance extends Controller {
+    getMyName: string
+}
 
-class PluginA extends Plugin {
-    apply(engine: Engine<ViewModel>): void {
+Tanfu.use(function () {
+    Tanfu.setPrototypeOfController('getMyName', 'dsasfsafds')
+})
+Tanfu.use(function () {
+    Tanfu.element('myelementId', function ({ text }) {
+        return <div>这是我的自定义组件{text}</div>
+    })
+})
+
+class ControllerA extends Controller {
+    apply(engine: Engine<ViewModel>, controller: ControllerIntance): void {
         engine.didMount('elementA', () => {
             console.log('a加载完成了')
         })
@@ -15,7 +27,10 @@ class PluginA extends Plugin {
             console.log('点击了')
             engine.setState({
                 elementA: {
-                    text: '点击了'
+                    text: controller.getMyName
+                },
+                myelementId: {
+                    text: '黎明宇'
                 }
             })
         })
@@ -26,18 +41,20 @@ class PluginA extends Plugin {
     }
 }
 
-const Root = createContainer([new PluginA], function () {
+const Root = createContainer(function () {
     return (
         <div>
             <A elementId='elementA' />
+            <Template elementId='myelementId' />
             <B elementId='elementB' />
         </div>
     )
-})
+}, [new ControllerA()])
 
 type ViewModel = {
     elementA: Aprops,
     elementB: Bprops,
+    myelementId: Aprops
 }
 
 type Aprops = {

@@ -1,16 +1,38 @@
 import React, { useContext, useEffect, useMemo, useReducer, useRef } from 'react';
-import { CoreEngine, Plugin } from 'tanfu-core';
-export { Engine } from 'tanfu-core/es/engine';
-export { default as Plugin } from 'tanfu-core/es/plugin'
+import TanfuCore, { CoreEngine, Controller, GLOBAL_ELEMENTS_KEY } from 'tanfu-core';
+export { Controller, Engine, Plugin } from 'tanfu-core'
 import get from 'lodash.get'
+
+const Tanfu: Tanfu = TanfuCore
+// 重写element方法，使用createUI包裹
+Tanfu.element = function (elementId: string, ui: React.ComponentType<any>) {
+    // @ts-ignore
+    Tanfu[GLOBAL_ELEMENTS_KEY][elementId] = createUI(ui)
+}
+
+export type Tanfu = Omit<typeof TanfuCore, 'element'> & {
+    element: (elementId: string, ui: React.ComponentType<any>) => void
+}
+
+export default Tanfu;
+
 
 // @ts-ignore
 const ReactViewContext = React.createContext<CoreEngine>(null);
 
-export function ReactView({ children, plugins = [] }: { children: React.ReactChild, plugins: Plugin[] }) {
+/** 如果注册了全局组件可用这个进行渲染 ，默认渲染children */
+export function Template(props: { elementId: string, children?: React.ReactChild }) {
+    const { elementId, children } = props
+    // @ts-ignore
+    const RenderUI = TanfuCore[GLOBAL_ELEMENTS_KEY][elementId]
+    return <>{RenderUI ? <RenderUI elementId={elementId} /> : children}</>
+}
+
+/** 包裹React视图组件，生成CoreEngine并执行控制器 */
+export function ReactView({ children, controllers = [] }: { children: React.ReactChild, controllers?: Controller[] }) {
     const engine = useMemo(() => {
         const engine = new CoreEngine();
-        engine.registerPlugin(plugins);
+        engine.useControllers(controllers);
         return engine;
     }, [])
     return <ReactViewContext.Provider value={engine}>{children}</ReactViewContext.Provider>
@@ -18,18 +40,21 @@ export function ReactView({ children, plugins = [] }: { children: React.ReactChi
 
 ReactView.displayName = '$REACT_VIEW$'
 
-export function createContainer<P = {}>(plugins: any[], UI: React.ComponentType<P>) {
-    return createElement(plugins, UI, ReactView)
+/** 创建容器组件 */
+export function createContainer<P = {}>(UI: React.ComponentType<P>, controllers: Controller[]) {
+    return createElement(controllers, UI, ReactView)
 }
 
-
-function createElement<P = {}>(plugins: any[], UI: React.ComponentType<P>, ReactView: React.ComponentType<any> = React.Fragment) {
+/** 创建视图元素 */
+function createElement<P = {}>(controllers: Controller[], UI: React.ComponentType<P>, ReactView: React.ComponentType<any> = React.Fragment) {
     const Element = React.memo(function (props: React.ComponentProps<typeof UI> & { elementId?: string }) {
         const { elementId, ...others } = props
+        // 获取engien
         const engine = useContext(ReactViewContext)
-
+        // 获取元素state
         const state = elementId ? engine?.getState(elementId) : {}
 
+        // 构建injectCallback生成的回调属性 
         const callbackFnProps = useMemo(() => {
             if (elementId && engine?._callBackFns[elementId]) {
                 const callbackFns = engine?._callBackFns[elementId];
@@ -46,7 +71,10 @@ function createElement<P = {}>(plugins: any[], UI: React.ComponentType<P>, React
                 return _callbackFnProps;
             }
             return {}
-        }, [])
+        }, [others])
+
+        // 元素属性，注意：直接值元素设置的属性值会覆盖使用engine.setState设置的元素值，
+        // 如果想两种方式都生效，需要使用受控的模式进行更新属性
         const elementProps = Object.assign({}, state, { elementId, ...others, ...callbackFnProps })
         const previousProps = usePrevious(elementProps)
         const forceUpdate = useForceUpdate();
@@ -73,13 +101,14 @@ function createElement<P = {}>(plugins: any[], UI: React.ComponentType<P>, React
             }
         }, [])
         const RenderUI = engine?._elements?.[elementId || ''] || UI
-        const reactViewProps: { plugins?: Plugin[] } = {};
-        if (ReactView.displayName === '$REACT_VIEW$') reactViewProps['plugins'] = plugins
+        const reactViewProps: { controllers?: Controller[] } = {};
+        if (ReactView.displayName === '$REACT_VIEW$') reactViewProps['controllers'] = controllers
         return <ReactView {...reactViewProps}><RenderUI {...elementProps} /></ReactView>;
     })
     return Element;
 }
 
+/** 创建UI组件 */
 export function createUI<P = {}>(UI: React.ComponentType<P>) {
     return createElement([], UI)
 }

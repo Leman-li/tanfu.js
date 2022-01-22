@@ -1,6 +1,6 @@
 {
   "name": "tanfu-react",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-beta.1",
   "scripts": {
     "start": "dumi dev",
     "docs:build": "dumi build",
@@ -11,7 +11,8 @@
     "test": "umi-test",
     "test:coverage": "umi-test --coverage",
     "prepublishOnly": "npm run build",
-    "publish:alpha": "npm publish --tag=alpha --registry=https://registry.npmjs.org"
+    "publish:alpha": "npm publish --tag=alpha --registry=https://registry.npmjs.org",
+    "publish:beta": "npm publish --tag=beta --registry=https://registry.npmjs.org"
   },
   "files": ["es"],
   "module": "es/index.js",
