@@ -15,7 +15,7 @@ Tanfu.use(function () {
     })
 })
 
-class ControllerA extends Controller {
+class ControllerA extends Controller<ViewModel> {
     apply(engine: Engine<ViewModel>, controller: ControllerIntance): void {
         engine.didMount('elementA', () => {
             console.log('a加载完成了')

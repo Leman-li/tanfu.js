@@ -114,7 +114,10 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         controllers.forEach(controller => {
             this._controllers.set(controller.getName() || controller, controller)
         })
-        this._controllers.forEach(controller => controller.apply(this.toEngine() as Engine, controller))
+        this._controllers.forEach(controller => {
+            controller.engine = this.toEngine()
+            controller.apply(controller.engine, controller)
+        })
     }
 
     /** 设置状态 */

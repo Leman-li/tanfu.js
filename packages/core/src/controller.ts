@@ -1,9 +1,11 @@
 import { Engine } from "./engine";
 
 // 控制器，负责处理业务逻辑，并处理数据模型和view的交互（MVC中的C）
-export default class Controller<Options = any> {
+export default class Controller<ViewModel = any, Options = any> {
 
     options?: Options
+
+    engine?: Engine<ViewModel>
 
     constructor(options?: Options) {
         this.options = options
@@ -13,7 +15,7 @@ export default class Controller<Options = any> {
     getName(): string | void {
     }
 
-    apply(engine: Engine, controller: Controller) {
+    apply(engine: Engine<ViewModel>, controller: Controller) {
 
     }
 }
