@@ -35,11 +35,11 @@ type DidMountFunction = WatchFunction;
 type WillUnmountFunction = WatchFunction;
 
 // 定义view model 类型
-export type ViewModel = {
+export type ViewModel = DeepPartial<{
     [elementId: string]: {
         [p: string]: any
     }
-}
+}>
 
 type DeepPartial<T> = {
     [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
@@ -155,6 +155,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
     injectCallback<E extends ElementId<VM>, F extends StringKeys<keyof PickFunction<VM[E]>>>(elementId: E, fnName: F, fn: VM[E][F]) {
         if (!this._callBackFns[elementId]) this._callBackFns[elementId] = {}
         if (!this._callBackFns[elementId][fnName]) this._callBackFns[elementId][fnName] = []
+        // @ts-ignore
         this._callBackFns[elementId][fnName].push(fn)
     }
 }
