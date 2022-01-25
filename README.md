@@ -18,7 +18,7 @@ A high expansion, easy to open, business logic and view separation, follow the M
 * **Custom development**，Custom logic/views can be developed in a simple way without contaminating the original views and logic 
 * **Plugin system**，Plug-in mechanisms can inject global functionality and view rendering into the framework
 
-## 📦 Install
+## Install
 
 ```bash
 npm install tanfu-react --save
@@ -28,7 +28,7 @@ npm install tanfu-react --save
 yarn add tanfu-react
 ```
 
-## 🔨 Usage
+## Usage
 
 ```jsx
 import { createContainer, createUI, Controller } from 'tanfu-react';
@@ -45,11 +45,21 @@ const B = createUI(function({ onClick }){
 // Inherit the Controller class and implement the Apply method for consumption by container components
 class AppController extends Controller {
 
-    apply(engine){
+    // GetName is not implemented and is required when the Controller needs to be replaced in an extension
+    getName(){
+      return 'AppController'
+    }
+    
+    // Business logic is simulated here
+    getText(){
+      return 'B clicked'
+    }
+
+    apply(engine, controller){
         engine.injectCallback('elementB', 'onClick', function(){
             engine.setState({
                 elementA: {
-                    text: 'B clicked'
+                    text: controller.getText()
                 }
             })
         })
@@ -66,6 +76,44 @@ const App = createContainer(function(){
     )
 }, [new AppController()])
 
+```
+
+## How to extend development (Custom development)
+
+## Expand the logic
+
+Extending the logic is simple, as shown below, by calling the extend method of the container component to pass in the extended Controller
+
+```jsx
+class NewAppController extends AppController {
+    // Simulate new business logic
+    getText(){
+      return 'new B clicked'
+    }
+}
+
+// Consume new controllers through the container component's extend method
+// Note here that NewApp does not consume the old AppController,
+// Because NewAppController and AppController have the same name, the later Controller overwrites the previous Controller
+const NewApp = App.extend({controllers: [new NewAppController()]})
+
+```
+
+## Expand the view
+
+Extending the view is also simple, as shown below, by calling the extend method of the container component to pass in the extended view
+
+```jsx
+import { createUI } from 'tanfu-react'
+const NewB = createUI(function({onClick}){
+    return <div onClick={onClick}>PRESS NEW B</div>
+})
+
+const NewApp = App.extend({
+  elements:{
+    'elementB': NewB
+  }
+})
 ```
 
 ## License
