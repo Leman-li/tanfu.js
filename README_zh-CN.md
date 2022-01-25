@@ -98,7 +98,7 @@ class NewAppController extends AppController {
 // 通过容器组件的extend方法消费新的 Controller
 // 此处注意 NewApp 并不会消费老的 AppController， 
 // 因为 NewAppController 和 AppController 有共同的 name，后加入的 Controller 会将前面的 Controller 覆盖
-const NewApp = App.extend({controllers: [NewAppController()]})
+const NewApp = App.extend({controllers: [new NewAppController()]})
 ```
 
 ## 扩展视图
