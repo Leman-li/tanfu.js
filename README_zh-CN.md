@@ -19,7 +19,7 @@
 * **定制化开发**，在不污染原有的视图和逻辑情况下，可通过简单的方法完成定制逻辑/视图的开发
 * **插件机制**，插件机制可以为框架注入全局功能和视图渲染
 
-## 📦 安装
+## 安装
 
 ```bash
 npm install tanfu-react --save
@@ -29,7 +29,7 @@ npm install tanfu-react --save
 yarn add tanfu-react
 ```
 
-## 🔨 示例
+## 示例
 
 ```jsx
 import { createContainer, createUI, Controller } from 'tanfu-react';
@@ -45,13 +45,23 @@ const B = createUI(function({ onClick }){
 })
 
 // 继承 Controller 类并实现 apply 方法，供容器组件消费
-class AppController extends Controller {
+export class AppController extends Controller {
 
-    apply(engine){
+    // getName可不实现，当需要在扩展处替换该 Controller 时则需要实现
+    getName(){
+      return 'AppController'
+    }
+    
+    // 此处模拟业务逻辑
+    getText(){
+      return 'B clicked'
+    }
+
+    apply(engine, controller){
         engine.injectCallback('elementB', 'onClick', function(){
             engine.setState({
                 elementA: {
-                    text: 'B clicked'
+                    text: controller.getText()
                 }
             })
         })
@@ -69,6 +79,43 @@ const App = createContainer(function(){
     )
 }, [new AppController()])
 
+```
+
+## 如果进行扩展开发（定制化开发）
+
+## 扩展逻辑
+
+对逻辑的扩展很简单，如下所示，我们调用容器组件的 extend 方法传入扩展后的 Controller 即可
+
+```jsx
+class NewAppController extends AppController {
+    // 模拟新的业务逻辑
+    getName(){
+      return 'new B clicked'
+    }
+}
+
+// 通过容器组件的extend方法消费新的 Controller
+// 此处注意 NewApp 并不会消费老的 AppController， 
+// 因为 NewAppController 和 AppController 有共同的 name，后加入的 Controller 会将前面的 Controller 覆盖
+const NewApp = App.extend({controllers: [NewAppController()]})
+```
+
+## 扩展视图
+
+对视图的扩展也很简单，如下所示，我们调用容器组件的 extend 方法传入扩展后的视图即可
+
+```jsx
+import { createUI } from 'tanfu-react'
+const NewB = createUI(function({onClick}){
+    return <div onClick={onClick}>PRESS NEW B</div>
+})
+
+const NewApp = App.extend({
+  elements:{
+    'elementB': NewB
+  }
+})
 ```
 
 ## License
