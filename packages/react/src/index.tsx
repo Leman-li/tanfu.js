@@ -98,7 +98,7 @@ function createElement<P = {}>(
 
         // 元素属性，注意：直接值元素设置的属性值会覆盖使用engine.setState设置的元素值，
         // 如果想两种方式都生效，需要使用受控的模式进行更新属性
-        const elementProps = Object.assign({}, state, { elementId, ...others, ...callbackFnProps })
+        const elementProps = Object.assign({}, state, { ...others, ...callbackFnProps })
         const previousProps = usePrevious(elementProps)
         const forceUpdate = useForceUpdate();
         useEffect(() => {
@@ -138,11 +138,11 @@ function createElement<P = {}>(
         // @ts-ignore
         return createElement([...controllers, ...extendControllers], UI, ReactView, elements)
     }
-    let displayNamePrefix = 'Element_UI'
+    let displayName = 'Element_UI'
     if (ReactView.displayName === '$REACT_VIEW$') {
-        displayNamePrefix = 'Container_UI'
+        displayName = 'Container_UI'
     }
-    ReturnElement.displayName = displayNamePrefix
+    ReturnElement.displayName = displayName
     return ReturnElement;
 }
 
