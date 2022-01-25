@@ -81,7 +81,7 @@ const App = createContainer(function(){
 
 ```
 
-## 如果进行扩展开发（定制化开发）
+## 如何进行扩展开发（定制化开发）
 
 ## 扩展逻辑
 
