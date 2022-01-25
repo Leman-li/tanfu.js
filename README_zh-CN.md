@@ -90,7 +90,7 @@ const App = createContainer(function(){
 ```jsx
 class NewAppController extends AppController {
     // 模拟新的业务逻辑
-    getName(){
+    getText(){
       return 'new B clicked'
     }
 }
