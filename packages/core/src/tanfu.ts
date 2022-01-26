@@ -2,9 +2,9 @@ import Controller from "./controller"
 import CoreEngine from "./engine"
 
 // 函数式插件
-type PluginFunction = () => void
+type PluginFunction = (tanfu: Tanfu) => void
 // 对象式插件
-type PluginObject = { install: () => void }
+type PluginObject = { install: (tanfu: Tanfu) => void }
 // 插件
 export type Plugin = PluginFunction | PluginObject
 // 存储全局元素
@@ -27,8 +27,8 @@ const tanfu: Tanfu = {
     Controller,
     CoreEngine,
     use(plugin: Plugin) {
-        if (typeof plugin === 'function') plugin()
-        else plugin?.install()
+        if (typeof plugin === 'function') plugin(tanfu)
+        else plugin?.install(tanfu)
     },
     element(elementId, ui) {
         globalElements[elementId] = ui
