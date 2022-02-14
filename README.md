@@ -6,7 +6,7 @@ English | [简体中文](./README_zh-CN.md)
 [![NPM Stars](https://img.shields.io/github/stars/Leman-li/tanfu.js)](https://github.com/Leman-li/tanfu.js)
 [![LICENSE](https://img.shields.io/github/license/Leman-li/tanfu.js?logo=MIT)](https://github.com/Leman-li/tanfu.js)
 
-A high expansion, easy to open, business logic and view separation, follow the MVC/MVVM model of the development framework
+A development framework with high scalability, easy to customize development, business logic and view separation
 
 ---
 
