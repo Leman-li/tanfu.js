@@ -23,10 +23,12 @@ type InJectCallBackFunction = (...args: any) => void;
 // 定义强制更新函数
 type ForceUpdate = () => void;
 
+type SetStateAction<S> = S | ((prevState: S) => S);
+
 // 定义更新状态
-type SetStatesAction<VM extends ViewModel> = DeepPartial<{
+type SetStatesAction<VM extends ViewModel> = SetStateAction<DeepPartial<{
     [K in keyof VM]: PickNotFunction<VM[K]>
-}>
+}>>
 
 // 定义元素加载完成函数
 type DidMountFunction = WatchFunction;
@@ -121,7 +123,11 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
     }
 
     /** 设置状态 */
-    setState(states: SetStatesAction<VM>) {
+    setState(states: SetStatesAction<VM>, needUpdate = true) {
+        if (typeof states === 'function') {
+            this.setState(states(this._store))
+            return;
+        }
         Object.keys(states).forEach(elementId => {
             const preState: Record<string, any> = get(this._store, elementId, {});
             const nextState = produce(preState, draft => {
@@ -136,7 +142,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
             if (preState === nextState) return;
             set(this._store, elementId, nextState);
             // 精确更新
-            this._forceUpdate[elementId]?.()
+            needUpdate && this._forceUpdate[elementId]?.()
         })
     }
 
