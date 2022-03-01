@@ -7,7 +7,7 @@
 [![NPM Stars](https://img.shields.io/github/stars/Leman-li/tanfu.js)](https://github.com/Leman-li/tanfu.js)
 [![LICENSE](https://img.shields.io/github/license/Leman-li/tanfu.js?logo=MIT)](https://github.com/Leman-li/tanfu.js)
 
-一个高扩展、易定开、业务逻辑与视图分离，遵循 MVC/MVVM 模式的开发框架
+一个高扩展、易于定制化开发、业务逻辑与视图分离开发框架
 
 ---
 
