@@ -15,7 +15,7 @@ export default class Controller<ViewModel = any, Options = any> {
     getName(): string | void {
     }
 
-    apply(engine: Engine<ViewModel>, controller: Controller) {
+    apply(engine: Engine<ViewModel>) {
 
     }
 }

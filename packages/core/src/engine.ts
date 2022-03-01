@@ -96,14 +96,12 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
 
     /** 组件加载完成 */
     didMount(elementId: ElementId<VM>, fn: DidMountFunction) {
-        if (!this._didMountFns[elementId]) this._didMountFns[elementId] = [];
-        this._didMountFns[elementId].push(fn)
+        (this._didMountFns[elementId] = this._didMountFns[elementId] ?? []).push(fn)
     }
 
     /** 组件卸载完成 */
     willUnmount(elementId: ElementId<VM>, fn: WillUnmountFunction) {
-        if (!this._willUnmountFns[elementId]) this._willUnmountFns[elementId] = [];
-        this._willUnmountFns[elementId].push(fn)
+        (this._willUnmountFns[elementId] = this._willUnmountFns[elementId] ?? []).push(fn)
     }
 
     /** 注册组件 */
@@ -118,25 +116,22 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         })
         this._controllers.forEach(controller => {
             controller.engine = this.toEngine()
-            controller.apply(controller.engine, controller)
+            controller.apply(controller.engine)
         })
     }
 
     /** 设置状态 */
-    setState(states: SetStatesAction<VM>, needUpdate = true) {
+    setState(states: SetStatesAction<VM>, needUpdate = true): void {
         if (typeof states === 'function') {
-            this.setState(states(this._store))
-            return;
+            return this.setState(states(this._store))
         }
         Object.keys(states).forEach(elementId => {
             const preState: Record<string, any> = get(this._store, elementId, {});
+            const currentState: Record<string, any> = states[elementId] ?? {}
             const nextState = produce(preState, draft => {
-                // @ts-ignore
-                Object.keys(states[elementId]).forEach(propName => {
-                    // @ts-ignore
-                    if (typeof states[elementId][propName] !== 'function' && draft[propName] !== states[elementId][propName])
-                        // @ts-ignore
-                        draft[propName] = states[elementId][propName]
+                Object.keys(currentState).forEach(propName => {
+                    if (typeof currentState[propName] !== 'function' && currentState[propName] !== draft[propName])
+                        draft[propName] = currentState[propName]
                 })
             })
             if (preState === nextState) return;
@@ -153,18 +148,15 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
 
     /** 监听元素属性变化 */
     watchElement<E extends ElementId<VM>>(elementId: E, fn: WatchFunction, deps: StringKeys<keyof PickNotFunction<VM[E]>>[]) {
-        if (!this._watchFns[elementId]) this._watchFns[elementId] = {}
+        this._watchFns[elementId] = this._watchFns[elementId] ?? {}
         deps?.forEach(dep => {
-            if (!this._watchFns[elementId][dep]) this._watchFns[elementId][dep] = []
-            this._watchFns[elementId][dep].push(fn)
+            (this._watchFns[elementId][dep] = this._watchFns[elementId][dep] ?? []).push(fn)
         })
     }
 
     /** 插入回调 */
     injectCallback<E extends ElementId<VM>, F extends StringKeys<keyof PickFunction<VM[E]>>>(elementId: E, fnName: F, fn: VM[E][F]) {
-        if (!this._callBackFns[elementId]) this._callBackFns[elementId] = {}
-        if (!this._callBackFns[elementId][fnName]) this._callBackFns[elementId][fnName] = []
-        // @ts-ignore
-        this._callBackFns[elementId][fnName].push(fn)
+        this._callBackFns[elementId] = this._callBackFns[elementId] ?? {};
+        (this._callBackFns[elementId][fnName] = this._callBackFns[elementId][fnName] ?? []).push(<any>fn)
     }
 }

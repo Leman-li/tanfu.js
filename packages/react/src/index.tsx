@@ -134,13 +134,14 @@ function createElement<P = {}>(
         return <ReactView {...reactViewProps}><RenderUI {...elementProps} /></ReactView>;
     })
     const ReturnElement = Element as Element<P>;
-    ReturnElement.extend = function ({ elements = {}, controllers: extendControllers = [] }) {
-        // @ts-ignore
-        return createElement([...controllers, ...extendControllers], UI, ReactView, elements)
-    }
     let displayName = 'Element_UI'
     if (ReactView.displayName === '$REACT_VIEW$') {
         displayName = 'Container_UI'
+        // 只有UI组件才有extend方法
+        ReturnElement.extend = function ({ elements = {}, controllers: extendControllers = [] }) {
+            // @ts-ignore
+            return createElement([...controllers, ...extendControllers], UI, ReactView, elements)
+        }
     }
     ReturnElement.displayName = displayName
     return ReturnElement;
