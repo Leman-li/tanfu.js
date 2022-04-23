@@ -3,7 +3,7 @@
 # Tanfu
 
 
-[![NPM version](https://img.shields.io/npm/v/tanfu-react?label=npm)](https://github.com/Leman-li/tanfu.js)
+[![NPM version](https://img.shields.io/npm/v/tanfu-core?label=npm)](https://github.com/Leman-li/tanfu.js)
 [![NPM Stars](https://img.shields.io/github/stars/Leman-li/tanfu.js)](https://github.com/Leman-li/tanfu.js)
 [![LICENSE](https://img.shields.io/github/license/Leman-li/tanfu.js?logo=MIT)](https://github.com/Leman-li/tanfu.js)
 
