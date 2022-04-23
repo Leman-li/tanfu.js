@@ -53,7 +53,7 @@ export default Tanfu.mountView(RootView)
 
 ```
 
-## 如果对视图加入逻辑控制
+## 如何对视图加入逻辑控制
 
 ```js
 // 创建一个Controller

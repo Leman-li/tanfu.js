@@ -12,108 +12,83 @@ A development framework with high scalability, easy to customize development, bu
 
 ## Features
 
-* **Easy to learn, easy to use**，There are only four concepts, which are user-friendly for front-end development
-* **Tanfu concepts**，Container(Container component) UI (UI component) Controller Plugin
+* **Easy to learn, easy to use**，Concepts are few and concentrated, user-friendly for front-end development
+* **Tanfu concepts**，View components, Controller plugins, providers, etc
 * **Logic and view separation**，The controller separates the page rendering view from the business logic, making the business logic and view highly reusable
-* **Custom development**，Custom logic/views can be developed in a simple way without contaminating the original views and logic 
 * **Plugin system**，Plug-in mechanisms can inject global functionality and view rendering into the framework
 
 ## Install
 
 ```bash
-npm install tanfu-react --save
+npm install tanfu-core --save
+npm install tanfu-react-plugin --save
 ```
 
 ```bash
-yarn add tanfu-react
+yarn add tanfu-core
+yarn add tanfu-react-plugin
 ```
 
 ## Usage
 
 ```jsx
-import { createContainer, createUI, Controller } from 'tanfu-react';
+import Tanfu, { TanfuView, html, Component } from 'tanfu-core'
+import TanfuReactPlugin from 'tanfu-react-plugin'
 
-// Build UI component A
-const A = createUI(function({ text }){
-    return <div>A{text}</div>
-})
-// Build UI component B
-const B = createUI(function({ onClick }){
-    return <div onClick={onClick}> PRESS B </div>
-})
+// 在App入口加载插件即可
+Tanfu.use(new TanfuReactPlugin())
 
-// Inherit the Controller class and implement the Apply method for consumption by container components
-class AppController extends Controller {
+@Component()
+class RootView extends TanfuView {
 
-    // GetName is not implemented and is required when the Controller needs to be replaced in an extension
-    getName(){
-      return 'AppController'
-    }
-    
-    // Business logic is simulated here
-    getText(){
-      return 'B clicked'
-    }
-
-    apply(engine, controller){
-        engine.injectCallback('elementB', 'onClick', function(){
-            engine.setState({
-                elementA: {
-                    text: controller.getText()
-                }
-            })
-        })
-    }
-}
-
-// Build Container component C
-const App = createContainer(function(){
-    return (
-        <div>
-          <A elementId="elementA">
-          <B elementId="elementB">
-        </div>
-    )
-}, [new AppController()])
-
-```
-
-## How to extend development (Custom development)
-
-## Expand the logic
-
-Extending the logic is simple, as shown below, by calling the extend method of the container component to pass in the extended Controller
-
-```jsx
-class NewAppController extends AppController {
-    // Simulate new business logic
-    getText(){
-      return 'new B clicked'
-    }
-}
-
-// Consume new controllers through the container component's extend method
-// Note here that NewApp does not consume the old AppController,
-// Because NewAppController and AppController have the same name, the later Controller overwrites the previous Controller
-const NewApp = App.extend({controllers: [new NewAppController()]})
-
-```
-
-## Expand the view
-
-Extending the view is also simple, as shown below, by calling the extend method of the container component to pass in the extended view
-
-```jsx
-import { createUI } from 'tanfu-react'
-const NewB = createUI(function({onClick}){
-    return <div onClick={onClick}>PRESS NEW B</div>
-})
-
-const NewApp = App.extend({
-  elements:{
-    'elementB': NewB
+  template(){
+    return html`<div>这是一个view</div>`
   }
+}
+
+
+export default Tanfu.mountView(RootView)
+
+```
+
+## How do I add logical control to a view
+
+```js
+// 创建一个Controller
+import { Controller, EventListener, Inject, Engine } from 'tanfu-core'
+@Controller()
+class RootController {
+
+  @Inject('engine') engine: Engine
+
+  @EventListener('elementA','onClick')
+   handleClick(){
+     engine.setState({
+       elementA: {
+         text: 1
+       }
+     })
+   }
+}
+
+function ElementA = ({text, onClick}) => {
+  return <div onClick={onClick}>{text}</div>
+}
+
+@Component({
+  controllers: [RootController],
+  declarations: [ElementA]
 })
+class RootView extends TanfuView {
+
+  template(){
+    return html`<element-a element-id="element-a"/>`
+  }
+}
+
+
+export default Tanfu.mountView(RootView)
+
 ```
 
 ## FAQ
