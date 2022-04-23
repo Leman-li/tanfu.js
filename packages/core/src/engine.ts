@@ -1,7 +1,10 @@
 import set from 'lodash.set';
 import get from 'lodash.get';
 import { produce } from 'immer'
-import Controller from './controller';
+import { EventListenerMetaData, LifeCycleMetaData, WatchElementMetaData } from './decorator';
+import { injector, InjectorObject, ViewObject } from './injector';
+import { TANFU_CONTROLLER_CHILDVIEW } from './constants';
+import { TanfuView } from './view';
 
 // 定义元素id类型
 type ElementId<VM extends ViewModel = ViewModel> = StringKeys<keyof VM>;
@@ -33,6 +36,8 @@ type SetStatesAction<VM extends ViewModel> = SetStateAction<DeepPartial<{
 // 定义元素加载完成函数
 type DidMountFunction = WatchFunction;
 
+type WillMountFunction = DidMountFunction
+
 // 定义元素卸载函数
 type WillUnmountFunction = WatchFunction;
 
@@ -43,7 +48,7 @@ export type ViewModel = DeepPartial<{
     }
 }>
 
-type DeepPartial<T> = {
+export type DeepPartial<T> = {
     [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K]
 }
 
@@ -58,7 +63,7 @@ type PickNotFunction<T> = {
 }
 
 /** 暴露给控制器 */
-export interface Engine<VM extends ViewModel = ViewModel> extends Pick<CoreEngine<VM>, 'setState' | 'getState' | 'watchElement' | 'injectCallback' | 'didMount' | 'willUnmount'> {
+export interface Engine<VM extends ViewModel = ViewModel> extends Pick<CoreEngine<VM>, 'setState' | 'getState'> {
 
 }
 
@@ -68,29 +73,96 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
     _callBackFns: Record<string, Record<InJectCallBackName, Array<InJectCallBackFunction>>>
     _forceUpdate: Partial<Record<ElementId<VM>, ForceUpdate>>
     _store: Record<string, any>
-    _controllers: Map<string | Controller, Controller>
+    _controllers: Map<string, ClassDecorator>
+    _providers: Map<string, any>
     _elements: Partial<Record<ElementId<VM>, any>>
+    _declarateElements: Record<string, any>
     _didMountFns: Record<string, Array<DidMountFunction>>
     _willUnmountFns: Record<string, Array<WillUnmountFunction>>
+    _willMountFns: Record<string, Array<DidMountFunction>>
+    _parentEngine!: CoreEngine | null
+    _subEngines!: CoreEngine | null;
+    _views: Record<string, any>
+    _hostView!: TanfuView
     constructor() {
         this._watchFns = {};
         this._callBackFns = {};
         this._forceUpdate = {};
         this._store = {};
         this._controllers = new Map();
+        this._providers = new Map()
         this._elements = {}
         this._didMountFns = {}
         this._willUnmountFns = {}
+        this._declarateElements = {}
+        this._willMountFns = {}
+        this._views = {}
+    }
+
+    /** 将视图添加到Controller */
+    addViewToController() {
+        this._controllers.forEach(controller => {
+            const childViews = Reflect.getMetadata(TANFU_CONTROLLER_CHILDVIEW, controller.constructor.prototype)
+
+            const proto: Record<string, any> | null = Reflect.getPrototypeOf(controller);
+            Object.keys(childViews).forEach(propertyName => {
+                if (proto) proto[propertyName] = this._views[childViews[propertyName]]
+
+            });
+        })
+    }
+
+    /** 添加主视图 */
+    addHostView(view: ViewObject) {
+        this._hostView = view.view;
+        this._hostView['dispatchEvent'] = ({ type, payload }) => {
+            const [elementId, callbackName] = type?.split('/') || []
+            this._callBackFns[elementId]?.[callbackName]?.forEach(fn => fn(payload))
+        }
+        this._parentEngine?.addView(view)
+    }
+
+    addView(view: ViewObject) {
+        if (view.elementId) this._views[view.elementId] = view.view
+    }
+
+    inject(object: InjectorObject) {
+        // @ts-ignore
+        injector(this, object)
+    }
+
+    /** 找到声明 */
+    findDeclaration(name: string) {
+        let engine = this, declaration;
+        while (engine) {
+            declaration = engine._declarateElements[name]
+            if (declaration) return declaration
+            // @ts-ignore
+            engine = engine._parentEngines
+        }
+        return null
+    }
+
+    /** 寻找Provider */
+    findProvider(name: string) {
+        let engine = this, provider;
+        while (engine) {
+            provider = engine._providers?.get(name)
+            if (provider) return provider
+            // @ts-ignore
+            engine = engine._parentEngines
+        }
+    }
+
+    /** 添加父引擎 */
+    addParentCoreEngine(engine: CoreEngine) {
+        this._parentEngine = engine
     }
 
     toEngine(): Engine<VM> {
         return {
-            watchElement: this.watchElement.bind(this),
             setState: this.setState.bind(this),
-            injectCallback: this.injectCallback.bind(this),
             getState: this.getState.bind(this),
-            didMount: this.didMount.bind(this),
-            willUnmount: this.willUnmount.bind(this)
         }
     }
 
@@ -99,25 +171,30 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         (this._didMountFns[elementId] = this._didMountFns[elementId] ?? []).push(fn)
     }
 
+    /** 组件加载完成 */
+    willMount(elementId: ElementId<VM>, fn: WillMountFunction) {
+        (this._willMountFns[elementId] = this._willMountFns[elementId] ?? []).push(fn)
+    }
+
+
     /** 组件卸载完成 */
     willUnmount(elementId: ElementId<VM>, fn: WillUnmountFunction) {
         (this._willUnmountFns[elementId] = this._willUnmountFns[elementId] ?? []).push(fn)
     }
 
+    addLifeCycleMetaData(data: LifeCycleMetaData) {
+        Object.keys(data).forEach(elementId => {
+            // @ts-ignore
+            Object.keys(data[elementId]).forEach((name: LifeTimeName) => {
+                // @ts-ignore
+                data[elementId][name]?.forEach(fn => this[name]?.(elementId, fn))
+            })
+        })
+    }
+
     /** 注册组件 */
     registerElements(elements: Record<string, any>) {
         this._elements = Object.assign({}, this._elements, elements)
-    }
-
-    /** 使用controller */
-    useControllers(controllers: Controller[]) {
-        controllers.forEach(controller => {
-            this._controllers.set(controller.getName() || controller, controller)
-        })
-        this._controllers.forEach(controller => {
-            controller.engine = this.toEngine()
-            controller.apply(controller.engine)
-        })
     }
 
     /** 设置状态 */
@@ -151,6 +228,26 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         this._watchFns[elementId] = this._watchFns[elementId] ?? {}
         deps?.forEach(dep => {
             (this._watchFns[elementId][dep] = this._watchFns[elementId][dep] ?? []).push(fn)
+        })
+    }
+
+    addWatchElementMetaData(data: WatchElementMetaData) {
+        const _this = this
+        Object.keys(data).forEach(elementId => {
+            Object.keys(data[elementId]).forEach(propertyName => {
+                // @ts-ignore
+                Object.keys(data[elementId][propertyName]).forEach(fn => this.watchElement(elementId, fn, [propertyName]))
+            })
+        })
+    }
+
+    addCallbackMetaData(data: EventListenerMetaData) {
+        const _this = this
+        Object.keys(data).forEach(elementId => {
+            Object.keys(data[elementId]).forEach(listenerName => {
+                // @ts-ignore
+                data[elementId][listenerName].forEach(fn => _this.injectCallback(elementId, listenerName, fn))
+            })
         })
     }
 

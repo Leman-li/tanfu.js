@@ -1,13 +1,16 @@
 import Tanfu, { Plugin, GLOBAL_ELEMENTS_KEY } from "./tanfu";
+import 'reflect-metadata'
 import CoreEngine, { Engine } from "./engine";
-import Controller from "./controller";
+import html from './html'
+import { TanfuView } from './view'
 export default Tanfu
 export {
     CoreEngine,
     Engine,
-    Controller,
     Plugin,
-    GLOBAL_ELEMENTS_KEY
+    GLOBAL_ELEMENTS_KEY,
+    html,
+    TanfuView
 }
 
 

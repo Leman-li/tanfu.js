@@ -33,7 +33,8 @@
   "dependencies": {
     "immer": "^9.0.12",
     "lodash.get": "^4.4.2",
-    "lodash.set": "^4.3.2"
+    "lodash.set": "^4.3.2",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/lodash.get": "*",
