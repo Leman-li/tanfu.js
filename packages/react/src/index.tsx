@@ -7,7 +7,7 @@ import defaultDeclarations from './defaultl-declarations';
 import Tanfu from 'tanfu-core';
 import { TemplateObject } from 'tanfu-core/es/html';
 import { HOST_LIFECYCLE_ID, TANFU_COMPONENT } from 'tanfu-core/es/constants';
-import { ComponentMetaData } from 'tanfu-core/es/decorator';
+import { ComponentMetaData } from 'tanfu-core';
 
 
 
@@ -19,7 +19,7 @@ export type ComponentArguments = Omit<Partial<InjectorObject>, 'declarations'> &
     declarations: Array<{ name: string, value: React.ComponentType<any> }>
 }
 
-export class TanfuReactPlugin {
+export default class TanfuReactPlugin {
     install(tanfu: Tanfu) {
         tanfu.addDeclarations(defaultDeclarations)
         tanfu.translateTemplate = (template, declarations) => {
@@ -76,10 +76,6 @@ function translateReactView(View: typeof Tanfu.View, tanfu: Tanfu, elementId?: s
 }
 
 
-
-export default Tanfu;
-
-
 // @ts-ignore
 const ReactViewContext = React.createContext<CoreEngine>(null);
 
@@ -95,7 +91,7 @@ interface ReactViewProps {
 
 
 /** 包裹React视图组件，生成CoreEngine并执行控制器 */
-export function ReactView({ children, providers = [], controllers = [], elements = {}, declarations = [], view }: ReactViewProps) {
+function ReactView({ children, providers = [], controllers = [], elements = {}, declarations = [], view }: ReactViewProps) {
     const parentEngine = useContext(ReactViewContext)
     const engine = useMemo(() => {
         const engine = new CoreEngine();

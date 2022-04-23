@@ -1,4 +1,4 @@
-import { Injectable } from "tanfu-core/es/decorator"
+import { Injectable } from "tanfu-core"
 
 @Injectable()
 export class RootModel {

@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import CoreEngine, { Engine } from "./engine";
 import html from './html'
 import { TanfuView } from './view'
+export * from './decorator'
 export default Tanfu
 export {
     CoreEngine,

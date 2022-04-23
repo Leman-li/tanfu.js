@@ -13,110 +13,87 @@
 
 ## 特性
 
-* **易学易用**，仅有 4 个 概念，对前端开发用户友好
-* **Tanfu 概念**，Container(容器组件) UI(ui组件) Controller(控制器) Plugin(插件)
+* **易学易用**，概念少且集中，对前端开发用户友好
+* **Tanfu 概念**，View(视图组件) Controller(控制器) Plugin(插件) Provider(供应者)  等等
 * **逻辑与视图分离**，通过控制器将页面渲染视图和业务逻辑区分开来，使得业务逻辑和视图可以高度复用
-* **定制化开发**，在不污染原有的视图和逻辑情况下，可通过简单的方法完成定制逻辑/视图的开发
 * **插件机制**，插件机制可以为框架注入全局功能和视图渲染
 
 ## 安装
 
 ```bash
-npm install tanfu-react --save
+npm install tanfu-core --save
+npm install tanfu-react-plugin --save
 ```
 
 ```bash
-yarn add tanfu-react
+yarn add tanfu-core
+yarn add tanfu-react-plugin
 ```
 
 ## 示例
 
 ```jsx
-import { createContainer, createUI, Controller } from 'tanfu-react';
+import Tanfu, { TanfuView, html, Component } from 'tanfu-core'
+import TanfuReactPlugin from 'tanfu-react-plugin'
 
-// 构建 ui 组件 A
-const A = createUI(function({ text }){
-    return <div>A{text}</div>
-})
+// 在App入口加载插件即可
+Tanfu.use(new TanfuReactPlugin())
 
-// 构建 ui 组件 B
-const B = createUI(function({ onClick }){
-    return <div onClick={onClick}> PRESS B </div>
-})
+@Component()
+class RootView extends TanfuView {
 
-// 继承 Controller 类并实现 apply 方法，供容器组件消费
-export class AppController extends Controller {
-
-    // getName可不实现，当需要在扩展处替换该 Controller 时则需要实现
-    getName(){
-      return 'AppController'
-    }
-    
-    // 此处模拟业务逻辑
-    getText(){
-      return 'B clicked'
-    }
-
-    apply(engine, controller){
-        engine.injectCallback('elementB', 'onClick', function(){
-            engine.setState({
-                elementA: {
-                    text: controller.getText()
-                }
-            })
-        })
-    }
-}
-
-
-// 构建容器组件
-const App = createContainer(function(){
-    return (
-        <div>
-          <A elementId="elementA">
-          <B elementId="elementB">
-        </div>
-    )
-}, [new AppController()])
-
-```
-
-## 如何进行扩展开发（定制化开发）
-
-## 扩展逻辑
-
-对逻辑的扩展很简单，如下所示，我们调用容器组件的 extend 方法传入扩展后的 Controller 即可
-
-```jsx
-class NewAppController extends AppController {
-    // 模拟新的业务逻辑
-    getText(){
-      return 'new B clicked'
-    }
-}
-
-// 通过容器组件的extend方法消费新的 Controller
-// 此处注意 NewApp 并不会消费老的 AppController， 
-// 因为 NewAppController 和 AppController 有共同的 name，后加入的 Controller 会将前面的 Controller 覆盖
-const NewApp = App.extend({controllers: [new NewAppController()]})
-```
-
-## 扩展视图
-
-对视图的扩展也很简单，如下所示，我们调用容器组件的 extend 方法传入扩展后的视图即可
-
-```jsx
-import { createUI } from 'tanfu-react'
-const NewB = createUI(function({onClick}){
-    return <div onClick={onClick}>PRESS NEW B</div>
-})
-
-const NewApp = App.extend({
-  elements:{
-    'elementB': NewB
+  template(){
+    return html`<div>这是一个view</div>`
   }
-})
+}
+
+
+export default Tanfu.mountView(RootView)
+
+
 ```
+
+## 如果对视图加入逻辑控制
+
+```js
+// 创建一个Controller
+import { Controller, EventListener, Inject, Engine } from 'tanfu-core'
+@Controller()
+class RootController {
+
+  @Inject('engine') engine: Engine
+
+  @EventListener('elementA','onClick')
+   handleClick(){
+     engine.setState({
+       elementA: {
+         text: 1
+       }
+     })
+   }
+}
+
+function ElementA = ({text, onClick}) => {
+  return <div onClick={onClick}>{text}</div>
+}
+
+@Component({
+  controllers: [RootController],
+  declarations: [ElementA]
+})
+class RootView extends TanfuView {
+
+  template(){
+    return html`<element-a element-id="element-a"/>`
+  }
+}
+
+
+export default Tanfu.mountView(RootView)
+
+```
+
+
 
 ## 常见问题解答
 

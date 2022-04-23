@@ -44,8 +44,9 @@ export default class Tanfu {
         return view
     }
 
-
-
+    static extend(){
+        
+    }
     addDeclarations(declarations: Array<{ name: string, value: any }>) {
         declarations.forEach(({ name, value }) => {
             if (this[GLOBAL_DECLARATIONS].find(item=> item.name === name)) {

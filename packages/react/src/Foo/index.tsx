@@ -1,10 +1,10 @@
 import React, {useEffect } from 'react';
 import Tanfu from 'tanfu-core';
-import {Component, Controller, EventListener, HostLifeCycle } from 'tanfu-core/es/decorator';
+import {Component, Controller, EventListener, HostLifeCycle } from 'tanfu-core';
 import { RootController } from './index.controller';
 import { BModel, RootModel } from './index.model';
 import { html, TanfuView } from 'tanfu-core';
-import { TanfuReactPlugin } from '..';
+import TanfuReactPlugin from '..';
 
 Tanfu.use(new TanfuReactPlugin())
 export default ({ title }: { title: string }) => <Root />;

@@ -1,5 +1,5 @@
 import { BView, ViewModel } from '.';
-import { Controller, EventListener, Injectable, Inject, LifeCycle, HostLifeCycle, Component, ChildView } from 'tanfu-core/es/decorator';
+import { Controller, EventListener, Injectable, Inject, LifeCycle, HostLifeCycle, Component, ChildView } from 'tanfu-core';
 import Tanfu, { Engine } from '../index'
 import { BModel, RootModel } from './index.model';
 
