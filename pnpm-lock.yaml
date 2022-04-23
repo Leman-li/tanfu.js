@@ -47,6 +47,7 @@ importers:
       '@types/lodash.set': '*'
       '@umijs/fabric': ^2.8.1
       '@umijs/test': ^3.0.5
+      autobind-decorator: ^2.4.0
       dumi: ^1.1.0
       father-build: ^1.17.2
       gh-pages: ^3.0.0
@@ -59,6 +60,7 @@ importers:
       tanfu-core: '*'
       yorkie: ^2.0.0
     dependencies:
+      autobind-decorator: registry.npmmirror.com/autobind-decorator/2.4.0
       immer: registry.npmmirror.com/immer/9.0.12
       lodash.get: registry.nlark.com/lodash.get/4.4.2
       lodash.set: registry.nlark.com/lodash.set/4.3.2
@@ -12008,6 +12010,13 @@ packages:
     dependencies:
       lodash: registry.npmmirror.com/lodash/4.17.21
     dev: true
+
+  registry.npmmirror.com/autobind-decorator/2.4.0:
+    resolution: {integrity: sha512-OGYhWUO72V6DafbF8PM8rm3EPbfuyMZcJhtm5/n26IDwO18pohE4eNazLoCGhPiXOCD0gEGmrbU3849QvM8bbw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/autobind-decorator/-/autobind-decorator-2.4.0.tgz}
+    name: autobind-decorator
+    version: 2.4.0
+    engines: {node: '>=8.10', npm: '>=6.4.1'}
+    dev: false
 
   registry.npmmirror.com/autoprefixer/9.6.0:
     resolution: {integrity: sha512-kuip9YilBqhirhHEGHaBTZKXL//xxGnzvsD0FtBQa6z+A69qZD6s/BAX9VzDF1i9VKDquTJDQaPLSEhOnL6FvQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/autoprefixer/download/autoprefixer-9.6.0.tgz}

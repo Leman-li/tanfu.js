@@ -35,9 +35,8 @@ export function injector(engine: CoreEngine, object: InjectorObject) {
             const parameterTypes = Reflect.getMetadata(DESIGN_PARAMTYPES, Controller)
             const parameters: string[] = Reflect.getMetadata(DESIGN_PARAMTERS, Controller) ?? []
             const injectParameters = Reflect.getMetadata(TANFU_INJECT, Controller.prototype) ?? {}
-            const controller = new Controller()
+            const controller = new Controller();
 
-            const proto: Record<string, any> | null = Reflect.getPrototypeOf(controller);
             [...parameters, ...Object.keys(injectParameters)].forEach((name, index) => {
                 let value;
                 if (injectParameters[name]) {
@@ -47,15 +46,15 @@ export function injector(engine: CoreEngine, object: InjectorObject) {
                     value = new ClassType()
                 }
                 if (name === 'engine') value = engine.toEngine()
-                if (proto) proto[name] = value
+                controller[name] = value
             })
             engine._controllers.set(Controller.name, controller)
             const eventListenerMetadata: EventListenerMetaData = Reflect.getMetadata(TANFU_EVENTLISTENER, Controller.prototype)
             const watchElementMetadata: WatchElementMetaData = Reflect.getMetadata(TANFU_WATCHELEMENT, Controller.prototype)
             const lifeTimeMetaData: LifeCycleMetaData = Reflect.getMetadata(TANFU_LIFECYCLE, Controller.prototype)
-            lifeTimeMetaData && engine.addLifeCycleMetaData(lifeTimeMetaData)
-            eventListenerMetadata && engine.addCallbackMetaData(eventListenerMetadata)
-            watchElementMetadata && engine.addWatchElementMetaData(watchElementMetadata)
+            lifeTimeMetaData && engine.addLifeCycleMetaData(lifeTimeMetaData, controller)
+            eventListenerMetadata && engine.addCallbackMetaData(eventListenerMetadata, controller)
+            watchElementMetadata && engine.addWatchElementMetaData(watchElementMetadata, controller)
         }
     })
 }

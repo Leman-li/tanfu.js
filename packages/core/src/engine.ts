@@ -73,7 +73,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
     _callBackFns: Record<string, Record<InJectCallBackName, Array<InJectCallBackFunction>>>
     _forceUpdate: Partial<Record<ElementId<VM>, ForceUpdate>>
     _store: Record<string, any>
-    _controllers: Map<string, ClassDecorator>
+    _controllers: Map<string, any>
     _providers: Map<string, any>
     _elements: Partial<Record<ElementId<VM>, any>>
     _declarateElements: Record<string, any>
@@ -104,10 +104,8 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         this._controllers.forEach(controller => {
             const childViews = Reflect.getMetadata(TANFU_CONTROLLER_CHILDVIEW, controller.constructor.prototype)
 
-            const proto: Record<string, any> | null = Reflect.getPrototypeOf(controller);
             Object.keys(childViews).forEach(propertyName => {
-                if (proto) proto[propertyName] = this._views[childViews[propertyName]]
-
+                controller[propertyName] = this._views[childViews[propertyName]]
             });
         })
     }
@@ -182,12 +180,12 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         (this._willUnmountFns[elementId] = this._willUnmountFns[elementId] ?? []).push(fn)
     }
 
-    addLifeCycleMetaData(data: LifeCycleMetaData) {
+    addLifeCycleMetaData(data: LifeCycleMetaData, controller: any) {
         Object.keys(data).forEach(elementId => {
             // @ts-ignore
             Object.keys(data[elementId]).forEach((name: LifeTimeName) => {
                 // @ts-ignore
-                data[elementId][name]?.forEach(fn => this[name]?.(elementId, fn))
+                data[elementId][name]?.forEach(methodName => this[name]?.(elementId, controller?.[methodName]?.bind?.(controller)))
             })
         })
     }
@@ -231,22 +229,25 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
         })
     }
 
-    addWatchElementMetaData(data: WatchElementMetaData) {
+    addWatchElementMetaData(data: WatchElementMetaData, controller: any) {
         const _this = this
         Object.keys(data).forEach(elementId => {
             Object.keys(data[elementId]).forEach(propertyName => {
                 // @ts-ignore
-                Object.keys(data[elementId][propertyName]).forEach(fn => this.watchElement(elementId, fn, [propertyName]))
+                Object.keys(data[elementId][propertyName]).forEach(methodName => this.watchElement(elementId, controller?.[methodName]?.bind?.(controller), [propertyName]))
             })
         })
     }
 
-    addCallbackMetaData(data: EventListenerMetaData) {
+    addCallbackMetaData(data: EventListenerMetaData, controller: any) {
         const _this = this
         Object.keys(data).forEach(elementId => {
             Object.keys(data[elementId]).forEach(listenerName => {
                 // @ts-ignore
-                data[elementId][listenerName].forEach(fn => _this.injectCallback(elementId, listenerName, fn))
+                data[elementId][listenerName].forEach(methodName =>{
+                    const fn = controller?.[methodName]?.bind?.(controller)
+                    _this.injectCallback(elementId as any, listenerName as any, fn)
+                })
             })
         })
     }

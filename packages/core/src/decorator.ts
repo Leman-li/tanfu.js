@@ -1,6 +1,8 @@
 import { DESIGN_PARAMTERS, HOST_LIFECYCLE_ID, TANFU_COMPONENT, TANFU_CONTROLLER, TANFU_CONTROLLER_CHILDVIEW, TANFU_EVENTLISTENER, TANFU_INJECT, TANFU_INJECTABLE, TANFU_INJECTABLE_NAME, TANFU_INJECT_PROPS_TOKEN, TANFU_LIFECYCLE, TANFU_WATCHELEMENT } from "./constants"
 import { InjectorObject } from "./injector";
 
+type MethodName = string;
+
 /** 用以表明该类属于 Controller */
 export function Controller(): ClassDecorator {
     return function (target: any) {
@@ -76,7 +78,7 @@ export function Props() {
 export type LifeCycleName = 'didMount' | 'willUnmount' | 'willMount'
 
 export interface LifeCycleMetaData {
-    [elementId: string]: Record<LifeCycleName, Function[]>
+    [elementId: string]: Record<LifeCycleName, MethodName[]>
 }
 
 function decoratorErrorHandler(descriptor: PropertyDescriptor, decorator: string) {
@@ -92,13 +94,12 @@ export function HostLifeCycle(lifeCycleName: LifeCycleName) {
 
 /** 子视图生命周期 */
 export function LifeCycle(elementId: string, lifeCycleName: LifeCycleName) {
-    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
-        descriptor.value = descriptor.value.bind(target)
+    return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
         const metaData: LifeCycleMetaData = (Reflect.getMetadata(TANFU_LIFECYCLE, target) ?? {})
         metaData[elementId] = (metaData[elementId] ?? {})
         metaData[elementId][lifeCycleName] = (metaData[elementId][lifeCycleName] ?? [])
-        if (!metaData[elementId][lifeCycleName].includes(descriptor.value)) {
-            metaData[elementId][lifeCycleName].push(descriptor.value)
+        if (!metaData[elementId][lifeCycleName].includes(methodName)) {
+            metaData[elementId][lifeCycleName].push(methodName)
         }
         Reflect.defineMetadata(TANFU_LIFECYCLE, metaData, target)
         return descriptor
@@ -107,19 +108,18 @@ export function LifeCycle(elementId: string, lifeCycleName: LifeCycleName) {
 
 export interface EventListenerMetaData {
     [elementId: string]: {
-        [listenerName: string]: Function[]
+        [listenerName: string]: MethodName[]
     }
 }
 
 /** 子视图事件监听器 */
 export function EventListener(elementId: string, listenerName: string) {
     return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
-        descriptor.value = descriptor.value.bind(target)
         const metaData: EventListenerMetaData = (Reflect.getMetadata(TANFU_EVENTLISTENER, target) ?? {})
         metaData[elementId] = (metaData[elementId] ?? {})
         metaData[elementId][listenerName] = (metaData[elementId][listenerName] ?? [])
-        if (!metaData[elementId][listenerName].includes(descriptor.value)) {
-            metaData[elementId][listenerName].push(descriptor.value)
+        if (!metaData[elementId][listenerName].includes(propertyName)) {
+            metaData[elementId][listenerName].push(propertyName)
         }
         Reflect.defineMetadata(TANFU_EVENTLISTENER, metaData, target)
         return descriptor
@@ -128,20 +128,20 @@ export function EventListener(elementId: string, listenerName: string) {
 
 export interface WatchElementMetaData {
     [elementId: string]: {
-        [propertyName: string]: Function[]
+        [propertyName: string]:MethodName[]
     }
 }
 
 /** 监听属性变化 */
 export function WatchElement(elementId: string, propertyNames: string[]) {
-    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+    return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
         descriptor.value = descriptor.value.bind(target)
         const metaData: WatchElementMetaData = (Reflect.getMetadata(TANFU_WATCHELEMENT, target) ?? {})
         metaData[elementId] = (metaData[elementId] ?? {})
         propertyNames?.forEach(propertyName => {
             metaData[elementId][propertyName] = (metaData[elementId][propertyName] ?? [])
-            if (!metaData[elementId][propertyName].includes(descriptor.value)) {
-                metaData[elementId][propertyName].push(descriptor.value)
+            if (!metaData[elementId][propertyName].includes(methodName)) {
+                metaData[elementId][propertyName].push(methodName)
             }
         })
 
