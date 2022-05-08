@@ -47,7 +47,7 @@ class RootView extends TanfuView {
 }
 
 
-export default Tanfu.mountView(RootView)
+export default ()=>Tanfu.mountView(RootView)
 
 ```
 
@@ -87,7 +87,7 @@ class RootView extends TanfuView {
 }
 
 
-export default Tanfu.mountView(RootView)
+export default ()=>Tanfu.mountView(RootView)
 
 ```
 
