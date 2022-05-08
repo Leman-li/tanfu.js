@@ -1,5 +1,5 @@
-import { BView, ViewModel } from '.';
-import { Controller, EventListener, Injectable, Inject, LifeCycle, HostLifeCycle, Component, ChildView } from 'tanfu-core';
+import { ViewModel } from '.';
+import { Controller, EventListener, Inject, LifeCycle, HostLifeCycle, Component, ChildView } from 'tanfu-core';
 import Tanfu, { Engine } from '../index'
 import { BModel, RootModel } from './index.model';
 
@@ -8,8 +8,7 @@ export class RootController {
 
     @Inject('engine') engine!: Engine<ViewModel>
 
-
-    @ChildView('b-view') view!: BView
+    value = 1
 
     constructor(private rootModel: RootModel, private b: string, private bModel: BModel) { }
 
@@ -17,25 +16,27 @@ export class RootController {
     initData() {
         this.engine.setState({
             a: {
-                text: this.rootModel.a + this.bModel.a + ''
+                text: this.value + ''
             }
         })
     }
 
     @EventListener('b', 'onClick')
-    handleClick() {
-        console.log(this.rootModel, this)
-        console.log('b点击了')
+    async handleClick() {
         this.engine.setState({
             a: {
-                text: this.rootModel.a + ''
+                text: ++this.value + ''
             }
         })
+
     }
 
-    @HostLifeCycle('didMount')
-    didMount(){
-        this.view.update()
+    delay(num: number) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(true)
+            }, num)
+        })
     }
 
     @LifeCycle('b', 'didMount')
