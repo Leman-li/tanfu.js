@@ -1,10 +1,12 @@
 import set from 'lodash.set';
 import get from 'lodash.get';
 import { produce } from 'immer'
-import { EventListenerMetaData, LifeCycleMetaData, WatchElementMetaData } from './decorator';
-import { injector, InjectorObject, ViewObject } from './injector';
-import { TANFU_CONTROLLER_CHILDVIEW } from './constants';
+import { Controller, EventListenerMetaData, LifeCycleMetaData, WatchElementMetaData } from './decorator';
+import { InjectorObject, ViewObject } from './ioc';
+import { HOST_LIFECYCLE_ID, TANFU_CHILD_VIEW, TANFU_EVENTLISTENER, TANFU_LIFECYCLE, TANFU_WATCHELEMENT } from './constants';
 import { TanfuView } from './view';
+import IoCContainer from './ioc';
+import TanfuHook from './tanfu-hook';
 
 // 定义元素id类型
 type ElementId<VM extends ViewModel = ViewModel> = StringKeys<keyof VM>;
@@ -41,9 +43,12 @@ type WillMountFunction = DidMountFunction
 // 定义元素卸载函数
 type WillUnmountFunction = WatchFunction;
 
+
+type UpdateFunction = WatchFunction
+
 // 定义view model 类型
 export type ViewModel = DeepPartial<{
-    [elementId: string]: {
+    [tId: string]: {
         [p: string]: any
     }
 }>
@@ -64,145 +69,149 @@ type PickNotFunction<T> = {
 
 /** 暴露给控制器 */
 export interface Engine<VM extends ViewModel = ViewModel> extends Pick<CoreEngine<VM>, 'setState' | 'getState'> {
-
+    getProps: () => Record<string, any>
 }
 
 /** 核心引擎 */
 export default class CoreEngine<VM extends ViewModel = ViewModel> {
-    _watchFns: Record<string, Record<DependencyProperty, Array<WatchFunction>>>
-    _callBackFns: Record<string, Record<InJectCallBackName, Array<InJectCallBackFunction>>>
-    _forceUpdate: Partial<Record<ElementId<VM>, ForceUpdate>>
-    _store: Record<string, any>
-    _controllers: Map<string, any>
-    _providers: Map<string, any>
-    _elements: Partial<Record<ElementId<VM>, any>>
-    _declarateElements: Record<string, any>
-    _didMountFns: Record<string, Array<DidMountFunction>>
-    _willUnmountFns: Record<string, Array<WillUnmountFunction>>
-    _willMountFns: Record<string, Array<DidMountFunction>>
-    _parentEngine!: CoreEngine | null
-    _subEngines!: CoreEngine | null;
-    _views: Record<string, any>
-    _hostView!: TanfuView
-    constructor() {
-        this._watchFns = {};
-        this._callBackFns = {};
-        this._forceUpdate = {};
-        this._store = {};
-        this._controllers = new Map();
-        this._providers = new Map()
-        this._elements = {}
-        this._didMountFns = {}
-        this._willUnmountFns = {}
-        this._declarateElements = {}
-        this._willMountFns = {}
-        this._views = {}
+    readonly zone: Zone = Zone.current.fork({
+        name: String(Date.now()),
+        properties: {
+            engine: this,
+        },
+        onInvokeTask: (delegate, currentZone, targetZone, task, ...args) => {
+            console.log('任务执行')
+            delegate.invokeTask(targetZone, task, ...args)
+            this.notifyUpdate()
+        },
+    })
+    public watchElementHook: TanfuHook = new TanfuHook(this.zone)
+    public callbackHook: TanfuHook = new TanfuHook(this.zone)
+    public forceUpdateHook: TanfuHook = new TanfuHook(this.zone)
+    private readonly store: Record<string, any> = {}
+    private readonly elements: Partial<Record<ElementId<VM>, any>> = {}
+    private readonly declarations: Map<string, any> = new Map()
+    public didMountHook: TanfuHook = new TanfuHook(this.zone)
+    public updateHook: TanfuHook = new TanfuHook(this.zone)
+    public willUnmountHook: TanfuHook = new TanfuHook(this.zone)
+    public willMountHook: TanfuHook = new TanfuHook(this.zone)
+    private readonly parentEngine!: CoreEngine | null | undefined
+    private readonly subEngines!: CoreEngine | null;
+    private readonly childViews = new Map<string, any>();
+    private hostView!: TanfuView;
+    private ioc!: IoCContainer;
+    private readonly needUpdateElements: Set<string> = new Set();
+    public props: Record<string, any> = {}
+
+    constructor(parentEngine: CoreEngine, providers: InjectorObject['providers'], controllers: InjectorObject['controllers'], view: ViewObject) {
+        this.parentEngine = parentEngine
+        this.addHostView(view)
+        this.ioc = new IoCContainer([
+            ...providers,
+            { provide: 'engine', useValue: this.toEngine() }
+        ], controllers)
+        controllers.forEach(Controller => {
+            const controller = this.ioc.getController(Controller.name)
+            const eventListenerMetadata: EventListenerMetaData = Reflect.getMetadata(TANFU_EVENTLISTENER, Controller.prototype)
+            const watchElementMetadata: WatchElementMetaData = Reflect.getMetadata(TANFU_WATCHELEMENT, Controller.prototype)
+            const lifeTimeMetaData: LifeCycleMetaData = Reflect.getMetadata(TANFU_LIFECYCLE, Controller.prototype)
+            lifeTimeMetaData && this.addLifeCycleMetaData(lifeTimeMetaData, controller)
+            eventListenerMetadata && this.addCallbackMetaData(eventListenerMetadata, controller)
+            watchElementMetadata && this.addWatchElementMetaData(watchElementMetadata, controller)
+        })
+        this.didMountHook.interceptor.before.push((name) => {
+            if (name === HOST_LIFECYCLE_ID) {
+                controllers.forEach(Controller => {
+                    let providers: InjectorObject['providers'] = [];
+                    this.childViews.forEach((view, tId) => {
+                        providers.push({
+                            provide: TANFU_CHILD_VIEW + tId,
+                            useValue: view
+                        })
+                    })
+                    this.ioc.inject(this.ioc.getController(Controller.name), providers)
+                })
+            }
+        })
     }
 
-    /** 将视图添加到Controller */
-    addViewToController() {
-        this._controllers.forEach(controller => {
-            const childViews = Reflect.getMetadata(TANFU_CONTROLLER_CHILDVIEW, controller.constructor.prototype)
-
-            Object.keys(childViews).forEach(propertyName => {
-                controller[propertyName] = this._views[childViews[propertyName]]
-            });
+    /** 添加声明 */
+    addDeclarations(declarations: InjectorObject['declarations']) {
+        declarations.forEach(({ name, value }) => {
+            this.declarations.set(name, value)
         })
     }
 
     /** 添加主视图 */
-    addHostView(view: ViewObject) {
-        this._hostView = view.view;
-        this._hostView['dispatchEvent'] = ({ type, payload }) => {
-            const [elementId, callbackName] = type?.split('/') || []
-            this._callBackFns[elementId]?.[callbackName]?.forEach(fn => fn(payload))
+    private addHostView(viewObject: ViewObject) {
+        const { view } = viewObject
+        this.hostView = view;
+        this.hostView['dispatchEvent'] = ({ type, payload }) => {
+            const [tId, callbackName] = type?.split('/') || []
+            this.callbackHook.call([tId, callbackName], payload)
         }
-        this._parentEngine?.addView(view)
+        this.parentEngine?.addChildView(viewObject)
     }
 
-    addView(view: ViewObject) {
-        if (view.elementId) this._views[view.elementId] = view.view
-    }
-
-    inject(object: InjectorObject) {
-        // @ts-ignore
-        injector(this, object)
+    private addChildView(viewObject: ViewObject) {
+        const { tId, view } = viewObject
+        if (tId) this.childViews.set(tId, view)
     }
 
     /** 找到声明 */
-    findDeclaration(name: string) {
-        let engine = this, declaration;
-        while (engine) {
-            declaration = engine._declarateElements[name]
-            if (declaration) return declaration
-            // @ts-ignore
-            engine = engine._parentEngines
-        }
-        return null
-    }
-
-    /** 寻找Provider */
-    findProvider(name: string) {
-        let engine = this, provider;
-        while (engine) {
-            provider = engine._providers?.get(name)
-            if (provider) return provider
-            // @ts-ignore
-            engine = engine._parentEngines
-        }
-    }
-
-    /** 添加父引擎 */
-    addParentCoreEngine(engine: CoreEngine) {
-        this._parentEngine = engine
+    getDeclaration(name: string): any {
+        return this.declarations.get(name) ?? this.parentEngine?.getDeclaration(name)
     }
 
     toEngine(): Engine<VM> {
         return {
             setState: this.setState.bind(this),
             getState: this.getState.bind(this),
+            getProps: () => this.props
         }
     }
 
     /** 组件加载完成 */
-    didMount(elementId: ElementId<VM>, fn: DidMountFunction) {
-        (this._didMountFns[elementId] = this._didMountFns[elementId] ?? []).push(fn)
+    didMount(tId: ElementId<VM>, fn: DidMountFunction) {
+        this.didMountHook.on(tId, fn)
+    }
+
+    update(tId: ElementId<VM>, fn: UpdateFunction) {
+        this.updateHook.on(tId, fn)
     }
 
     /** 组件加载完成 */
-    willMount(elementId: ElementId<VM>, fn: WillMountFunction) {
-        (this._willMountFns[elementId] = this._willMountFns[elementId] ?? []).push(fn)
+    willMount(tId: ElementId<VM>, fn: WillMountFunction) {
+        this.willMountHook.on(tId, fn)
     }
 
-
-    /** 组件卸载完成 */
-    willUnmount(elementId: ElementId<VM>, fn: WillUnmountFunction) {
-        (this._willUnmountFns[elementId] = this._willUnmountFns[elementId] ?? []).push(fn)
+    // 统一更新
+    notifyUpdate() {
+        Array.from(this.needUpdateElements).forEach(tId => {
+            this.forceUpdateHook.call(tId)
+        })
+        this.needUpdateElements.clear()
     }
+
 
     addLifeCycleMetaData(data: LifeCycleMetaData, controller: any) {
-        Object.keys(data).forEach(elementId => {
+        Object.keys(data).forEach(tId => {
             // @ts-ignore
-            Object.keys(data[elementId]).forEach((name: LifeTimeName) => {
+            Object.keys(data[tId]).forEach((name: LifeTimeName) => {
                 // @ts-ignore
-                data[elementId][name]?.forEach(methodName => this[name]?.(elementId, controller?.[methodName]?.bind?.(controller)))
+                data[tId][name]?.forEach(methodName => this[name]?.(tId, controller?.[methodName]?.bind?.(controller)))
             })
         })
     }
 
-    /** 注册组件 */
-    registerElements(elements: Record<string, any>) {
-        this._elements = Object.assign({}, this._elements, elements)
-    }
-
     /** 设置状态 */
-    setState(states: SetStatesAction<VM>, needUpdate = true): void {
+    setState(states: SetStatesAction<VM>): void {
         if (typeof states === 'function') {
-            return this.setState(states(this._store))
+            return this.setState(states(this.store))
         }
-        Object.keys(states).forEach(elementId => {
-            const preState: Record<string, any> = get(this._store, elementId, {});
-            const currentState: Record<string, any> = states[elementId] ?? {}
+        Object.keys(states).forEach(tId => {
+            const preState: Record<string, any> = get(this.store, tId, {});
+            const currentState: Record<string, any> = states[tId] ?? {}
             const nextState = produce(preState, draft => {
                 Object.keys(currentState).forEach(propName => {
                     if (typeof currentState[propName] !== 'function' && currentState[propName] !== draft[propName])
@@ -210,51 +219,48 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> {
                 })
             })
             if (preState === nextState) return;
-            set(this._store, elementId, nextState);
-            // 精确更新
-            needUpdate && this._forceUpdate[elementId]?.()
+            this.needUpdateElements.add(tId)
+            set(this.store, tId, nextState);
         })
     }
 
     /** 获取状态 */
-    getState<E extends ElementId<VM>>(elementId: E): PickNotFunction<VM[E]> {
-        return get(this._store, elementId, {})
+    getState<E extends ElementId<VM>>(tId: E): PickNotFunction<VM[E]> {
+        return get(this.store, tId, {})
     }
 
     /** 监听元素属性变化 */
-    watchElement<E extends ElementId<VM>>(elementId: E, fn: WatchFunction, deps: StringKeys<keyof PickNotFunction<VM[E]>>[]) {
-        this._watchFns[elementId] = this._watchFns[elementId] ?? {}
+    watchElement<E extends ElementId<VM>>(tId: E, fn: WatchFunction, deps: StringKeys<keyof PickNotFunction<VM[E]>>[]) {
         deps?.forEach(dep => {
-            (this._watchFns[elementId][dep] = this._watchFns[elementId][dep] ?? []).push(fn)
+            this.watchElementHook.on([tId, dep], fn)
         })
     }
 
     addWatchElementMetaData(data: WatchElementMetaData, controller: any) {
         const _this = this
-        Object.keys(data).forEach(elementId => {
-            Object.keys(data[elementId]).forEach(propertyName => {
+        Object.keys(data).forEach(tId => {
+            Object.keys(data[tId]).forEach(propertyName => {
                 // @ts-ignore
-                Object.keys(data[elementId][propertyName]).forEach(methodName => this.watchElement(elementId, controller?.[methodName]?.bind?.(controller), [propertyName]))
+                Object.keys(data[tId][propertyName]).forEach(methodName => this.watchElement(tId, controller?.[methodName]?.bind?.(controller), [propertyName]))
             })
         })
     }
 
     addCallbackMetaData(data: EventListenerMetaData, controller: any) {
         const _this = this
-        Object.keys(data).forEach(elementId => {
-            Object.keys(data[elementId]).forEach(listenerName => {
+        Object.keys(data).forEach(tId => {
+            Object.keys(data[tId]).forEach(listenerName => {
                 // @ts-ignore
-                data[elementId][listenerName].forEach(methodName =>{
+                data[tId][listenerName].forEach(methodName => {
                     const fn = controller?.[methodName]?.bind?.(controller)
-                    _this.injectCallback(elementId as any, listenerName as any, fn)
+                    _this.injectCallback(tId as any, listenerName as any, fn)
                 })
             })
         })
     }
 
     /** 插入回调 */
-    injectCallback<E extends ElementId<VM>, F extends StringKeys<keyof PickFunction<VM[E]>>>(elementId: E, fnName: F, fn: VM[E][F]) {
-        this._callBackFns[elementId] = this._callBackFns[elementId] ?? {};
-        (this._callBackFns[elementId][fnName] = this._callBackFns[elementId][fnName] ?? []).push(<any>fn)
+    injectCallback<E extends ElementId<VM>, F extends StringKeys<keyof PickFunction<VM[E]>>>(tId: E, fnName: F, fn: VM[E][F]) {
+        this.callbackHook.on([tId, fnName], fn as any)
     }
 }

@@ -1,7 +1,6 @@
 const TANFU_INJECTABLE = 'tanfu:injectable'
 const TANFU_INJECTABLE_NAME = 'tanfu:injectable_name'
 const TANFU_CONTROLLER = 'tanfu:controller'
-const TANFU_CONTROLLER_CHILDVIEW = 'tanfu:controllerChildView'
 const TANFU_LIFECYCLE = 'tanfu:lifeCycle'
 const TANFU_EVENTLISTENER = 'tanfu:eventListener'
 const TANFU_WATCHELEMENT = 'tanfu:watchElement'
@@ -14,6 +13,7 @@ const TANFU_PROPS_TO_STATE = 'tanfu:propsToState'
 const TANFU_COMPONENT = 'tanfu:component'
 const GLOABAL_TANFU = '_$GLOBAL_TANFU$_'
 const GLOBAL_DECLARATIONS = '_$GLOBAL_DECLARATIONS$_'
+const TANFU_CHILD_VIEW = 'tanfu:childView '
 
 export {
     TANFU_CONTROLLER,
@@ -31,5 +31,5 @@ export {
     TANFU_COMPONENT,
     GLOABAL_TANFU,
     GLOBAL_DECLARATIONS,
-    TANFU_CONTROLLER_CHILDVIEW
+    TANFU_CHILD_VIEW,
 }

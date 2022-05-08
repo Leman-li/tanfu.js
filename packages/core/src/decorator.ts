@@ -1,5 +1,5 @@
-import { DESIGN_PARAMTERS, HOST_LIFECYCLE_ID, TANFU_COMPONENT, TANFU_CONTROLLER, TANFU_CONTROLLER_CHILDVIEW, TANFU_EVENTLISTENER, TANFU_INJECT, TANFU_INJECTABLE, TANFU_INJECTABLE_NAME, TANFU_INJECT_PROPS_TOKEN, TANFU_LIFECYCLE, TANFU_WATCHELEMENT } from "./constants"
-import { InjectorObject } from "./injector";
+import { DESIGN_PARAMTERS, HOST_LIFECYCLE_ID, TANFU_CHILD_VIEW, TANFU_COMPONENT, TANFU_CONTROLLER, TANFU_EVENTLISTENER, TANFU_INJECT, TANFU_INJECTABLE, TANFU_INJECTABLE_NAME, TANFU_INJECT_PROPS_TOKEN, TANFU_LIFECYCLE, TANFU_WATCHELEMENT } from "./constants"
+import { InjectorObject } from "./ioc";
 
 type MethodName = string;
 
@@ -28,8 +28,9 @@ export function Component(args?: ComponentArguments): ClassDecorator {
                 return declaration
             } else {
                 const subMetaData = Reflect.getMetadata(TANFU_CONTROLLER, declaration)
-                return { 
-                    name: (subMetaData?.name || declaration.name)?.replace(/([A-Z])/g, '-$1').toLowerCase().slice(1), value: declaration }
+                return {
+                    name: (subMetaData?.name || declaration.name)?.replace(/([A-Z])/g, '-$1').toLowerCase().slice(1), value: declaration
+                }
             }
         })
     }
@@ -63,12 +64,8 @@ export function Inject(token: string) {
 export type ChildViewMetaData = InjectMetaData
 
 /** 获取子视图 */
-export function ChildView(elementId: string){
-    return function (target: any, propertyName: string) {
-        const metaData: ChildViewMetaData = Reflect.getMetadata(TANFU_CONTROLLER_CHILDVIEW, target) ?? {}
-        metaData[propertyName] = elementId
-        Reflect.defineMetadata(TANFU_CONTROLLER_CHILDVIEW, metaData, target)
-    }
+export function ChildView(tId: string) {
+    return Inject(TANFU_CHILD_VIEW + tId)
 }
 
 export function Props() {
@@ -77,8 +74,10 @@ export function Props() {
 
 export type LifeCycleName = 'didMount' | 'willUnmount' | 'willMount'
 
+export type HostLifyCycleName = LifeCycleName | 'update'
+
 export interface LifeCycleMetaData {
-    [elementId: string]: Record<LifeCycleName, MethodName[]>
+    [tId: string]: Record<LifeCycleName, MethodName[]>
 }
 
 function decoratorErrorHandler(descriptor: PropertyDescriptor, decorator: string) {
@@ -88,18 +87,18 @@ function decoratorErrorHandler(descriptor: PropertyDescriptor, decorator: string
 }
 
 /** 主视图生命周期 */
-export function HostLifeCycle(lifeCycleName: LifeCycleName) {
-    return LifeCycle(HOST_LIFECYCLE_ID, lifeCycleName)
+export function HostLifeCycle(lifeCycleName: HostLifyCycleName) {
+    return LifeCycle(HOST_LIFECYCLE_ID, lifeCycleName as any)
 }
 
 /** 子视图生命周期 */
-export function LifeCycle(elementId: string, lifeCycleName: LifeCycleName) {
+export function LifeCycle(tId: string, lifeCycleName: LifeCycleName) {
     return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
         const metaData: LifeCycleMetaData = (Reflect.getMetadata(TANFU_LIFECYCLE, target) ?? {})
-        metaData[elementId] = (metaData[elementId] ?? {})
-        metaData[elementId][lifeCycleName] = (metaData[elementId][lifeCycleName] ?? [])
-        if (!metaData[elementId][lifeCycleName].includes(methodName)) {
-            metaData[elementId][lifeCycleName].push(methodName)
+        metaData[tId] = (metaData[tId] ?? {})
+        metaData[tId][lifeCycleName] = (metaData[tId][lifeCycleName] ?? [])
+        if (!metaData[tId][lifeCycleName].includes(methodName)) {
+            metaData[tId][lifeCycleName].push(methodName)
         }
         Reflect.defineMetadata(TANFU_LIFECYCLE, metaData, target)
         return descriptor
@@ -107,19 +106,19 @@ export function LifeCycle(elementId: string, lifeCycleName: LifeCycleName) {
 }
 
 export interface EventListenerMetaData {
-    [elementId: string]: {
+    [tId: string]: {
         [listenerName: string]: MethodName[]
     }
 }
 
 /** 子视图事件监听器 */
-export function EventListener(elementId: string, listenerName: string) {
+export function EventListener(tId: string, listenerName: string) {
     return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
         const metaData: EventListenerMetaData = (Reflect.getMetadata(TANFU_EVENTLISTENER, target) ?? {})
-        metaData[elementId] = (metaData[elementId] ?? {})
-        metaData[elementId][listenerName] = (metaData[elementId][listenerName] ?? [])
-        if (!metaData[elementId][listenerName].includes(propertyName)) {
-            metaData[elementId][listenerName].push(propertyName)
+        metaData[tId] = (metaData[tId] ?? {})
+        metaData[tId][listenerName] = (metaData[tId][listenerName] ?? [])
+        if (!metaData[tId][listenerName].includes(propertyName)) {
+            metaData[tId][listenerName].push(propertyName)
         }
         Reflect.defineMetadata(TANFU_EVENTLISTENER, metaData, target)
         return descriptor
@@ -127,21 +126,21 @@ export function EventListener(elementId: string, listenerName: string) {
 }
 
 export interface WatchElementMetaData {
-    [elementId: string]: {
-        [propertyName: string]:MethodName[]
+    [tId: string]: {
+        [propertyName: string]: MethodName[]
     }
 }
 
 /** 监听属性变化 */
-export function WatchElement(elementId: string, propertyNames: string[]) {
+export function WatchElement(tId: string, propertyNames: string[]) {
     return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
         descriptor.value = descriptor.value.bind(target)
         const metaData: WatchElementMetaData = (Reflect.getMetadata(TANFU_WATCHELEMENT, target) ?? {})
-        metaData[elementId] = (metaData[elementId] ?? {})
+        metaData[tId] = (metaData[tId] ?? {})
         propertyNames?.forEach(propertyName => {
-            metaData[elementId][propertyName] = (metaData[elementId][propertyName] ?? [])
-            if (!metaData[elementId][propertyName].includes(methodName)) {
-                metaData[elementId][propertyName].push(methodName)
+            metaData[tId][propertyName] = (metaData[tId][propertyName] ?? [])
+            if (!metaData[tId][propertyName].includes(methodName)) {
+                metaData[tId][propertyName].push(methodName)
             }
         })
 

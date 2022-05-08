@@ -3,7 +3,7 @@ export interface TemplateObject {
     children?: Array<TemplateObject>;
     name: string,
     props?: { [key: string]: any },
-    elementId?: string,
+    tId?: string,
     type: Node['TEXT_NODE'] | Node['ELEMENT_NODE'],
     /** 在type 为 Node['TEXT_NODE'] 时存储文本值 */
     value?: string | null
@@ -28,14 +28,14 @@ function convertNodes(nodes: NodeListOf<ChildNode>) {
                 const attributes: NamedNodeMap = node.attributes
                 const props: TemplateObject['props'] = {}
                 for (let i = 0; i < attributes.length; i++) {
-                    const { name = '', value } = attributes.item(0) || {}
+                    const { name = '', value } = attributes.item(i) || {}
                     props[name] = value
                 }
                 children.push({
                     name: node.nodeName,
                     props,
                     children: convertNodes(node.childNodes),
-                    elementId: props['element-id'],
+                    tId: props['element-id'],
                     type: Node.ELEMENT_NODE
                 })
         }
