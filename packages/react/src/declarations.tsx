@@ -1,9 +1,9 @@
-import { ComponentArguments } from ".";
 import React from 'react'
 import htmlTag from "./html-tag";
+import { Declarations } from 'tanfu-core/es/ioc'
 
 
-const reactDeclarations: ComponentArguments['declarations'] = Object.keys(htmlTag).map(key => createDeclaration(htmlTag[key]))
+const reactDeclarations: Declarations = Object.keys(htmlTag).map(key => createDeclaration(htmlTag[key]))
 
 export default reactDeclarations
 

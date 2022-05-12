@@ -1,8 +1,8 @@
-import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import get from 'lodash.get'
 import reactDeclarations from './declarations'
 import Tanfu, { CoreEngine, TanfuAdapter, TanfuPlugin } from 'tanfu-core';
-import { HOST_LIFECYCLE_ID } from 'tanfu-core/src/constants'
+import { HOST_LIFECYCLE_ID } from 'tanfu-core/es/constants'
 import { nanoid } from 'nanoid';
 
 
