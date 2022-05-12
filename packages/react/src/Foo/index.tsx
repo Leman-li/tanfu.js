@@ -25,14 +25,14 @@ export type ViewModel = {
     providers: [RootModel, BModel],
     declarations: [AComponent, BComponent],
 })
-class AView extends Tanfu.View {
+class AView extends TanfuView {
 
 
 
     template() {
         return html`
         <a-component t-id="a">
-            <div t-slot="aElement">aelemen111t</div>
+          
         </a-component>
         SFAF
         <b-component t-id="b"></b-component>
@@ -41,9 +41,9 @@ class AView extends Tanfu.View {
     }
 }
 
-const Root = Tanfu.mountView(AView)
+const Root = Tanfu.createApp(AView)
 
-export default ({ title }: { title: string }) => Root;
+export default ({ title }: { title: string }) => Tanfu.createApp(AView);
 
 
 

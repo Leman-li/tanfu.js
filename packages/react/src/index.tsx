@@ -1,29 +1,14 @@
 import React, { useCallback, useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { CoreEngine, TanfuView } from 'tanfu-core';
-export { Engine, Plugin } from 'tanfu-core'
 import get from 'lodash.get'
-import reactDeclarations from './declarations';
-import Tanfu from 'tanfu-core';
-import { TemplateObject } from 'tanfu-core/es/html';
-import { HOST_LIFECYCLE_ID, TANFU_COMPONENT } from 'tanfu-core/es/constants';
-import { ComponentMetaData, InjectorObject } from 'tanfu-core';
+import reactDeclarations from './declarations'
+import Tanfu, { CoreEngine, TanfuAdapter, TanfuPlugin } from 'tanfu-core';
+import { HOST_LIFECYCLE_ID } from 'tanfu-core/src/constants'
+import { nanoid } from 'nanoid';
 
 
-
-
-
-
-export type ComponentArguments = Omit<Partial<InjectorObject>, 'declarations'> & {
-    template: TemplateObject;
-    declarations: Array<{ name: string, value: React.ComponentType<any> }>
-}
-
-export default class TanfuReactPlugin {
-    install(tanfu: Tanfu) {
-        tanfu.addDeclarations(reactDeclarations)
-
-        tanfu.createRenderView = (view, props, type) => {
-            let RenderUI;
+class TanfuReactAdapter extends TanfuAdapter {
+    createRenderView(view: any, props: any, type: number) {
+        let RenderUI;
             const reactProps: any = {}
             Object.keys(props ?? {}).forEach(key => {
                 reactProps[formatToHump(key)] = props?.[key]
@@ -31,18 +16,26 @@ export default class TanfuReactPlugin {
             if (Tanfu.isTanfuView(view)) {
                 let { view: ui, engine } = Tanfu.translateTanfuView(view, props)
                 const ElementUI = createElement(function (props: any) {
-                    return <ReactView props={props} engine={engine} children={ui} />
+                    return <ReactView key={nanoid()} props={props} engine={engine} children={ui} />
                 })
-                return <ElementUI {...reactProps} />
+                return <ElementUI key={nanoid()} {...reactProps} />
             }
             if (type === Node.TEXT_NODE) {
-                return view
+                return <React.Fragment key={nanoid()}>{view}</React.Fragment>
             } else if (type === Node.ELEMENT_NODE && view) {
                 RenderUI = createElement(view)
-                return <RenderUI {...reactProps} />
+                return <RenderUI key={nanoid()} {...reactProps} />
             }
-            return <></>;
-        }
+            return <React.Fragment key={nanoid()}></React.Fragment>;
+    }
+}
+
+
+
+export default class TanfuReactPlugin extends TanfuPlugin {
+    install(tanfu: Tanfu) {
+        tanfu.addDeclarations(reactDeclarations)
+        tanfu.addAdapter(new TanfuReactAdapter())
     }
 }
 
@@ -61,7 +54,7 @@ interface ReactViewProps {
 /** 包裹React视图组件，生成CoreEngine并执行控制器 */
 function ReactView({ children, engine, props }: ReactViewProps) {
     useMemo(() => {
-        engine.willMountHook.call(HOST_LIFECYCLE_ID)
+        engine.willMountHook.call('')
     }, [])
 
     useMemo(() => {
