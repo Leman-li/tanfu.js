@@ -1,17 +1,19 @@
-import { InjectMetaData } from "./decorator";
-import { DESIGN_PARAMTERS, DESIGN_PARAMTYPES, TANFU_EVENTLISTENER, TANFU_INJECT, TANFU_INJECTABLE, TANFU_WATCHELEMENT } from "./constants";
+
+import { DESIGN_PARAMTERS, DESIGN_PARAMTYPES, TANFU_EVENTLISTENER, TANFU_INJECT, TANFU_INJECTABLE_WATER_MARK, TANFU_WATCHELEMENT } from "./constants";
+import { InjectMetadata } from "./decorators/inject";
 import { Type } from "./types";
+import TanfuView from "./view";
 
-
-import { TanfuView } from "./view";
 
 type ValueProvider = { provide: string, useValue: any }
 
-export interface InjectorObject {
-    providers: Array<Type<any> | { provide: Type<any> | string, useClass: Type<any> } | ValueProvider>
-    controllers: Type<any>[],
-    declarations: Array<{ name: string, value: any }>
-}
+type ClassProviders = Type<any> | {provide: Type<any> | string, useClass: Type<any>}
+
+export type Providers = Array<ValueProvider | ClassProviders>
+export type Controllers = Type<any> []
+export type Declarations = Array<{ name: string, value: any }>
+
+
 
 export interface ViewObject {
     view: TanfuView
@@ -36,7 +38,7 @@ export default class IoCContainer {
     private readonly injectableProviders: Map<string, Pick<ResolveProviderObject, 'value' | 'type'>> = new Map()
     private readonly cache: Map<string, any> = new Map()
 
-    constructor(providers: InjectorObject['providers'], controllers: InjectorObject['controllers']) {
+    constructor(providers: Providers, controllers: Controllers) {
         providers.forEach(Provider => {
             const { name, value, type } = this.resolveProvider(Provider)
             this.providers.set(name, { value, type })
@@ -69,7 +71,7 @@ export default class IoCContainer {
         return value
     }
 
-    inject(instance: any, providers: InjectorObject['providers']) {
+    inject(instance: any, providers: Providers) {
         providers.forEach(Provider => {
             const { name, value, type } = this.resolveProvider(Provider)
             this.providers.set(name, { value, type })
@@ -81,7 +83,7 @@ export default class IoCContainer {
         const constructorParameters: string[] = Reflect.getMetadata(DESIGN_PARAMTERS, Type) ?? []
 
         // 通过@Inject注入
-        const injectParameters: InjectMetaData = Reflect.getMetadata(TANFU_INJECT, Type.prototype) ?? {};
+        const injectParameters: InjectMetadata = Reflect.getMetadata(TANFU_INJECT, Type.prototype) ?? {};
 
         const prototype: Record<string, any> = {}
 
@@ -110,12 +112,12 @@ export default class IoCContainer {
     }
 
     /** 是否可被注入 */
-    private isInjectable(Provider: InjectorObject['providers'][0]) {
-        return Reflect.getMetadata(TANFU_INJECTABLE, this.resolveProvider(Provider).value)
+    private isInjectable(Provider: ClassProviders) {
+        return Reflect.getMetadata(TANFU_INJECTABLE_WATER_MARK, this.resolveProvider(Provider).value)
     }
 
     /** 解析Provider */
-    private resolveProvider(Provider: InjectorObject['providers'][0]): ResolveProviderObject {
+    private resolveProvider(Provider: Providers[0]): ResolveProviderObject {
         return {
             name: typeof Provider === 'object' ? typeof Provider.provide === 'string' ? Provider.provide : Provider.provide.name : Provider.name,
             // @ts-ignore

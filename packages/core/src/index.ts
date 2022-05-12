@@ -1,21 +1,25 @@
-import Tanfu, { Plugin, GLOBAL_ELEMENTS_KEY } from "./tanfu";
+
 import 'reflect-metadata'
-import CoreEngine, { Engine } from "./engine";
-import html from './html'
-import { TanfuView } from './view'
-export * from './decorator'
-import { InjectorObject } from './ioc'
 import 'zone.js'
+import Tanfu from './tanfu';
 export default Tanfu
-export {
-    CoreEngine,
-    Engine,
-    Plugin,
-    GLOBAL_ELEMENTS_KEY,
-    html,
-    TanfuView,
-    InjectorObject
-}
+
+export { default as CoreEngine } from './engine'
+export { default as TanfuView } from './view'
+export { default as TanfuAdapter } from './adapter'
+export { default as Controller } from './decorators/constroller'
+export { default as Inject } from './decorators/inject'
+export { default as Injectable } from './decorators/injectable'
+export { default as Component } from './decorators/component'
+export { default as ChildView } from './decorators/child-view'
+export { default as LifeCycle, HostLifeCycle } from './decorators/lifecycle'
+export { default as WatchElement } from './decorators/watch-element'
+export { default as EventListener } from './decorators/event-listener'
+export { default as Engine } from './decorators/engine'
+export { default as html } from './html'
+export { default as TanfuPlugin } from './plugin'
+
+
 
 
 

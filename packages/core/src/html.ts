@@ -23,7 +23,7 @@ function convertNodes(nodes: NodeListOf<ChildNode>) {
                     })
                 }
                 break;
-            default:
+            case Node.ELEMENT_NODE:
                 // @ts-ignore
                 const attributes: NamedNodeMap = node.attributes
                 const props: TemplateObject['props'] = {}

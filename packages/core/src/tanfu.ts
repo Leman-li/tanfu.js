@@ -1,58 +1,65 @@
-
-import { Engine } from "./engine"
-import { GLOABAL_TANFU, GLOBAL_DECLARATIONS, TANFU_COMPONENT } from "./constants"
 import CoreEngine from "./engine"
+import TanfuAdapter from "./adapter"
+import { GLOABAL_TANFU, TANFU_COMPONENT, TANFU_COMPONENT_WATER_MARK } from "./constants"
+import { Plugin } from "./plugin"
+import TanfuView from "./view"
+import { ComponentMetadata } from "./decorators/component"
 import { TemplateObject } from "./html"
-import { InjectorObject } from "./ioc"
-import { TanfuView } from "./view"
-import { Component, ComponentMetaData } from "./decorator"
+import { isObject } from "./util"
 
-// 函数式插件
-type PluginFunction = (tanfu: Tanfu) => void
-// 对象式插件
-type PluginObject = { install: (tanfu: Tanfu) => void }
-// 插件
-export type Plugin = PluginFunction | PluginObject
-// 存储全局元素
-const globalElements: Record<string, any> = {}
 
-export const GLOBAL_ELEMENTS_KEY = '__$_TANFU_GLOBAL_ELEMENTS_$__'
 
 export type RenderView = any
 
+
+
 export default class Tanfu {
-    static View = TanfuView;
-    static CoreEngine = CoreEngine;
-    [GLOBAL_DECLARATIONS]: Array<{ name: string, value: any }> = []
-    static getInstance() {
-        // @ts-ignore
-        return (window[GLOABAL_TANFU] = window[GLOABAL_TANFU] ?? new Tanfu())
+
+    private readonly declarations: Array<{ name: string, value: any }> = []
+    private adapter!: TanfuAdapter
+
+    getAdapter() {
+        return this.adapter
     }
+
+
+    getDeclarations() {
+        return this.declarations
+    }
+
+
+    addDeclarations(declarations: Array<{ name: string, value: any }>) {
+        declarations.forEach(({ name, value }) => {
+            this.declarations.push({ name, value })
+        })
+    }
+
+    addAdapter(adapter: TanfuAdapter) {
+        this.adapter = adapter
+    }
+
+
     static use(plugin: Plugin) {
-        if (typeof plugin === 'function') plugin(Tanfu.getInstance())
-        else plugin?.install(Tanfu.getInstance())
+        if (typeof plugin === 'function') plugin(getTanfu())
+        else plugin?.install(getTanfu())
     }
 
     static isTanfuView(View: any) {
-        return View?.__TANTU_VIEW_TAG__
+        return isObject(View) && Reflect.getMetadata(TANFU_COMPONENT_WATER_MARK, View)
     }
 
-    static mountView(View: typeof TanfuView) {
-        return Tanfu.getInstance().createRenderView(View, {})
-    }
-
-    createRenderView(View: any, props: any, type: number): any {
-
+    static createApp(View: typeof TanfuView) {
+        return getTanfu().adapter.createRenderView(View, {}, -1)
     }
 
     static translateTanfuView(View: typeof TanfuView, props?: any): {
         view: RenderView,
         engine: CoreEngine
     } {
-        const metaData: ComponentMetaData = Reflect.getMetadata(TANFU_COMPONENT, View)
+        const metaData: ComponentMetadata = Reflect.getMetadata(TANFU_COMPONENT, View)
         const view = new View()
         const { template: templateFn } = view
-        const declarations = [...metaData?.declarations ?? [], ...Tanfu.getInstance()[GLOBAL_DECLARATIONS]]
+        const declarations = [...metaData?.declarations ?? [], ...getTanfu().getDeclarations()]
         const engine = new CoreEngine(
             Zone.current.get('engine'),
             metaData.providers ?? [],
@@ -62,24 +69,25 @@ export default class Tanfu {
         // 在当前的engine的zone下运行
         return {
             view: engine.zone.run(() => {
-                return convertTemplate(templateFn()?.children ?? [], declarations, Tanfu.getInstance())
+                return convertTemplate(templateFn()?.children ?? [], declarations)
             }), engine
         }
     }
-
-    addDeclarations(declarations: Array<{ name: string, value: any }>) {
-        declarations.forEach(({ name, value }) => {
-            this[GLOBAL_DECLARATIONS].push({ name, value })
-        })
-    }
 }
 
-function convertTemplate(template: TemplateObject[], declarations: Record<string, any>[], tanfu: Tanfu) {
-    return template?.filter(({type, value}) => type !== Node.TEXT_NODE || value?.trim() ).map(templateObject => {
+function getTanfu(): Tanfu {
+    // @ts-ignore
+    return (window[GLOABAL_TANFU] = window[GLOABAL_TANFU] ?? new Tanfu())
+
+}
+
+
+function convertTemplate(template: TemplateObject[], declarations: Record<string, any>[]) {
+    return template?.filter(({ type, value }) => type !== Node.TEXT_NODE || value?.trim()).map(templateObject => {
         const { name, type, props, children = [], value } = templateObject || {}
         const View = declarations?.find(item => item.name === name)?.value
         if (props)
-            props['children'] = convertTemplate(children, declarations, tanfu)
+            props['children'] = convertTemplate(children, declarations)
         const childrenView: any = []
         // 支持slot
         props?.['children']?.forEach((child: any, index: number) => {
@@ -89,7 +97,7 @@ function convertTemplate(template: TemplateObject[], declarations: Record<string
             } else childrenView.push(child)
         })
         if (props) props['children'] = childrenView
-        if(!props?.['children']?.length)delete props?.['children']
-        return tanfu.createRenderView(type === Node.TEXT_NODE ? value : View, props, type)
+        if (!props?.['children']?.length) delete props?.['children']
+        return getTanfu().getAdapter().createRenderView(type === Node.TEXT_NODE ? value : View, props, type)
     })
 }

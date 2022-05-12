@@ -7,3 +7,18 @@ export const assignExcludeFns = (target: Record<string, any>, source: Record<str
     })
     return target;
 }
+
+export function getParameterNames(fn: Function) {
+    if (typeof fn !== 'function') return [];
+    var COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+    var code = fn.toString().replace(COMMENTS, '');
+    var result = code.slice(code.indexOf('(') + 1, code.indexOf(')'))
+        .match(/([^\s,]+)/g);
+    return result === null
+        ? []
+        : result;
+}
+
+export function isObject(it: any){
+    return typeof it === 'object' ? it !== null : typeof it === 'function'
+}
