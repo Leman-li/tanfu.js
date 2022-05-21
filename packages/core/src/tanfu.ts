@@ -66,10 +66,15 @@ export default class Tanfu {
             metaData.controllers ?? [],
             { tId: props?.['t-id'], view }
         )
+        engine.addDeclarations(declarations)
+        engine.$slot = props?.['$slot']
+        // delete props?.['$slot']
+        const tTemplate = templateFn()
+        tTemplate.elements?.forEach(node => node.engine = engine)
         // 在当前的engine的zone下运行
         return {
             view: engine.zone.run(() => {
-                return convertTemplate(templateFn()?.children ?? [], declarations)
+                return convertTemplate(tTemplate?.children ?? [])
             }), engine
         }
     }
@@ -82,22 +87,31 @@ function getTanfu(): Tanfu {
 }
 
 
-function convertTemplate(template: TemplateObject[], declarations: Record<string, any>[]) {
+function convertTemplate(template: TemplateObject[]) {
     return template?.filter(({ type, value }) => type !== Node.TEXT_NODE || value?.trim()).map(templateObject => {
-        const { name, type, props, children = [], value } = templateObject || {}
-        const View = declarations?.find(item => item.name === name)?.value
-        if (props)
-            props['children'] = convertTemplate(children, declarations)
-        const childrenView: any = []
-        // 支持slot
-        props?.['children']?.forEach((child: any, index: number) => {
-            const slotName = children?.[index]?.props?.['t-slot']
-            if (slotName) {
-                props[slotName] = child
-            } else childrenView.push(child)
+        const { name, type, props, children = [], value, engine } = templateObject || {}
+        const View = engine?.getDeclaration(name);
+        const dealChildren: TemplateObject[] = []
+        children?.forEach((child: TemplateObject) => {
+            const { name, props: _props, engine } = child ?? {}
+            //解析slot组件
+            if (name === 'slot') {
+                const slotName = _props?.['name']
+                let slotObj = engine?.$slot.get(slotName)
+                if (Tanfu.isTanfuView(View)) {
+                    if (slotObj) dealChildren.push(slotObj)
+                    else dealChildren.push(...child.children ?? [])
+                } else if (props) {
+                    if (slotObj) props[slotName] = convertTemplate([slotObj])?.[0]
+                    else props[slotName] = convertTemplate(child.children ?? [])
+                }
+                return;
+            }
+            dealChildren.push(child)
         })
-        if (props) props['children'] = childrenView
-        if (!props?.['children']?.length) delete props?.['children']
-        return getTanfu().getAdapter().createRenderView(type === Node.TEXT_NODE ? value : View, props, type)
+        if (!Tanfu.isTanfuView(View)) delete props?.$slot
+        if (props) props['children'] = convertTemplate(dealChildren)
+        if (!props?.children?.length) delete props?.['children']
+        return getTanfu().getAdapter().createRenderView(type === Node.TEXT_NODE ? value : View, props, type, engine)
     })
 }
