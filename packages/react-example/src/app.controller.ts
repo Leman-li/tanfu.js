@@ -1,4 +1,5 @@
-import { Controller, HostLifeCycle } from "tanfu-core";
+import { Controller, Engine, EventListener, HostLifeCycle, Inject, LifeCycle } from "tanfu-core";
+import type TanfuEngine from "tanfu-core/es/engine/tanfu-engine";
 import AppRepository from "./app.repository";
 
 class A {
@@ -10,7 +11,21 @@ class A {
 @Controller()
 export default class AppController {
 
-    constructor(private repository: AppRepository){}
+    @Inject('AppRepository') repository!: AppRepository
+
+    @Engine() engine!: TanfuEngine
+
+    @HostLifeCycle('willMount')
+    willMount(){
+        console.log('willMount', this)
+        this.engine.setState({
+            'virtual-list':{
+                height: 300,
+                itemHeight: 50,
+                listData: Array(100000).fill(1).map((value, index)=> index)
+            }
+        })
+    }
 
 
     @HostLifeCycle('didMount')

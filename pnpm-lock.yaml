@@ -58,7 +58,7 @@ importers:
       lodash.set: ^4.3.2
       nanoid: ^3.3.4
       prettier: ^2.2.1
-      react: ^16.12.0 || ^17.0.0
+      react: '*'
       tanfu-core: '*'
       yorkie: ^2.0.0
     dependencies:
@@ -96,7 +96,9 @@ importers:
       '@types/react': ^18.0.0
       '@types/react-dom': ^18.0.0
       babel-plugin-transform-typescript-metadata: ^0.3.2
+      customize-cra: ^1.0.0
       react: ^17.0.0
+      react-app-rewired: ^2.2.1
       react-dom: ^17.0.0
       react-scripts: 5.0.1
       tanfu-core: '*'
@@ -123,6 +125,8 @@ importers:
       '@babel/plugin-proposal-decorators': registry.npmmirror.com/@babel/plugin-proposal-decorators/7.17.9
       '@babel/preset-typescript': registry.npmmirror.com/@babel/preset-typescript/7.16.7
       babel-plugin-transform-typescript-metadata: registry.npmmirror.com/babel-plugin-transform-typescript-metadata/0.3.2
+      customize-cra: registry.npmmirror.com/customize-cra/1.0.0
+      react-app-rewired: registry.npmmirror.com/react-app-rewired/2.2.1_react-scripts@5.0.1
 
 packages:
 
@@ -6978,7 +6982,7 @@ packages:
       debug: registry.npmmirror.com/debug/4.3.3
       gensync: registry.nlark.com/gensync/1.0.0-beta.2
       json5: registry.npmmirror.com/json5/2.2.0
-      semver: registry.nlark.com/semver/6.3.0
+      semver: registry.npmmirror.com/semver/6.3.0
       source-map: registry.nlark.com/source-map/0.5.7
     transitivePeerDependencies:
       - supports-color
@@ -7057,7 +7061,7 @@ packages:
       '@babel/core': registry.npmmirror.com/@babel/core/7.12.3
       '@babel/helper-validator-option': registry.npmmirror.com/@babel/helper-validator-option/7.16.7
       browserslist: registry.npmmirror.com/browserslist/4.19.1
-      semver: registry.nlark.com/semver/6.3.0
+      semver: registry.npmmirror.com/semver/6.3.0
     dev: true
 
   registry.npmmirror.com/@babel/helper-compilation-targets/7.16.7_@babel+core@7.16.7:
@@ -7073,7 +7077,7 @@ packages:
       '@babel/core': registry.npmmirror.com/@babel/core/7.16.7
       '@babel/helper-validator-option': registry.npmmirror.com/@babel/helper-validator-option/7.16.7
       browserslist: registry.npmmirror.com/browserslist/4.19.1
-      semver: registry.nlark.com/semver/6.3.0
+      semver: registry.npmmirror.com/semver/6.3.0
 
   registry.npmmirror.com/@babel/helper-create-class-features-plugin/7.16.7:
     resolution: {integrity: sha512-kIFozAvVfK05DM4EVQYKK+zteWvY85BFdGBRQBytRyY3y+6PX0DkDOn/CZ3lEuczCfrCxEzwt0YtP/87YPTWSw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/@babel/helper-create-class-features-plugin/-/helper-create-class-features-plugin-7.16.7.tgz}
@@ -14966,6 +14970,14 @@ packages:
     name: csstype
     version: 3.0.10
 
+  registry.npmmirror.com/customize-cra/1.0.0:
+    resolution: {integrity: sha512-DbtaLuy59224U+xCiukkxSq8clq++MOtJ1Et7LED1fLszWe88EoblEYFBJ895sB1mC6B4uu3xPT/IjClELhMbA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/customize-cra/-/customize-cra-1.0.0.tgz}
+    name: customize-cra
+    version: 1.0.0
+    dependencies:
+      lodash.flow: registry.npmmirror.com/lodash.flow/3.5.0
+    dev: true
+
   registry.npmmirror.com/damerau-levenshtein/1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/damerau-levenshtein/-/damerau-levenshtein-1.0.8.tgz}
     name: damerau-levenshtein
@@ -18212,7 +18224,7 @@ packages:
       '@babel/parser': registry.npmmirror.com/@babel/parser/7.16.8
       '@istanbuljs/schema': registry.npmmirror.com/@istanbuljs/schema/0.1.3
       istanbul-lib-coverage: registry.npmmirror.com/istanbul-lib-coverage/3.2.0
-      semver: registry.nlark.com/semver/6.3.0
+      semver: registry.npmmirror.com/semver/6.3.0
     transitivePeerDependencies:
       - supports-color
 
@@ -19901,6 +19913,12 @@ packages:
     dependencies:
       p-locate: registry.npmmirror.com/p-locate/5.0.0
     dev: false
+
+  registry.npmmirror.com/lodash.flow/3.5.0:
+    resolution: {integrity: sha512-ff3BX/tSioo+XojX4MOsOMhJw0nZoUEF011LX8g8d3gvjVbxd89cCio4BCXronjxcTUIJUoqKEUA+n4CqvvRPw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash.flow/-/lodash.flow-3.5.0.tgz}
+    name: lodash.flow
+    version: 3.5.0
+    dev: true
 
   registry.npmmirror.com/lodash.memoize/4.1.2:
     resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/lodash.memoize/-/lodash.memoize-4.1.2.tgz}
@@ -23310,6 +23328,19 @@ packages:
       whatwg-fetch: registry.npmmirror.com/whatwg-fetch/3.6.2
     dev: false
 
+  registry.npmmirror.com/react-app-rewired/2.2.1_react-scripts@5.0.1:
+    resolution: {integrity: sha512-uFQWTErXeLDrMzOJHKp0h8P1z0LV9HzPGsJ6adOtGlA/B9WfT6Shh4j2tLTTGlXOfiVx6w6iWpp7SOC5pvk+gA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/react-app-rewired/-/react-app-rewired-2.2.1.tgz}
+    id: registry.npmmirror.com/react-app-rewired/2.2.1
+    name: react-app-rewired
+    version: 2.2.1
+    hasBin: true
+    peerDependencies:
+      react-scripts: '>=2.1.3'
+    dependencies:
+      react-scripts: registry.npmmirror.com/react-scripts/5.0.1_react@17.0.2+typescript@4.5.4
+      semver: registry.npmmirror.com/semver/5.7.1
+    dev: true
+
   registry.npmmirror.com/react-attr-converter/0.3.1:
     resolution: {integrity: sha1-Siq/bZB7fdrk2GLf7IDkic5BrW4=, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/react-attr-converter/download/react-attr-converter-0.3.1.tgz}
     name: react-attr-converter
@@ -24401,6 +24432,13 @@ packages:
     dependencies:
       node-forge: registry.npmmirror.com/node-forge/1.3.1
     dev: false
+
+  registry.npmmirror.com/semver/5.7.1:
+    resolution: {integrity: sha512-sauaDf/PZdVgrLTNYHRtpXa1iRiKcaebiKQ1BJdpQlWH2lCvexQdX55snPFyK7QzpudqbCI0qXFfOasHdyNDGQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/semver/-/semver-5.7.1.tgz}
+    name: semver
+    version: 5.7.1
+    hasBin: true
+    dev: true
 
   registry.npmmirror.com/semver/6.3.0:
     resolution: {integrity: sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/semver/-/semver-6.3.0.tgz}
