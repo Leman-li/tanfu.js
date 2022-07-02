@@ -21,9 +21,9 @@ export default class VirtualList extends TanfuView {
 
     template(): TemplateObject {
         return html`
-        <div class="virtual-list-container" t-id="v-list-container">
-            <div class="virtual-list-inner" t-id="v-list-inner"></div>
-            <virtual-list-content class="virtual-list-content" t-id="v-list-content">
+        <div class="virtual-list-container" >
+            <div class="virtual-list-inner" ></div>
+            <virtual-list-content class="virtual-list-content">
                 <slot name="itemNode"/>
             </virtual-list-content>
         </div>

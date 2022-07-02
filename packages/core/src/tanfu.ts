@@ -6,6 +6,7 @@ import TanfuView from "./view"
 import { ComponentMetadata } from "./decorators/component"
 import { TemplateObject } from "./html"
 import { isObject } from "./util"
+import Directive from "./directive"
 
 
 
@@ -17,6 +18,7 @@ export default class Tanfu {
 
     private readonly declarations: Array<{ name: string, value: any }> = []
     private adapter!: TanfuAdapter
+    public directives: Map<string, Directive> = new Map()
 
     getAdapter() {
         return this.adapter
@@ -36,6 +38,14 @@ export default class Tanfu {
 
     addAdapter(adapter: TanfuAdapter) {
         this.adapter = adapter
+    }
+
+    directive(name: string, directive: Directive) {
+        this.directives.set(name, directive)
+    }
+
+    static directive(name: string, directive: Directive) {
+        getTanfu().directive(name, directive)
     }
 
 
@@ -68,9 +78,15 @@ export default class Tanfu {
         )
         engine.addDeclarations(declarations)
         engine.$slot = props?.['$slot']
+        function _setEngine(template: TemplateObject[]){
+            template.forEach(item => {
+                item.engine = engine
+                _setEngine(item.children ?? [])
+            })
+        }
         // delete props?.['$slot']
         const tTemplate = templateFn()
-        tTemplate.elements?.forEach(node => node.engine = engine)
+        _setEngine(tTemplate.children ?? [])
         // 在当前的engine的zone下运行
         return {
             view: engine.zone.run(() => {
@@ -89,7 +105,7 @@ function getTanfu(): Tanfu {
 
 function convertTemplate(template: TemplateObject[]) {
     return template?.filter(({ type, value }) => type !== Node.TEXT_NODE || value?.trim()).map(templateObject => {
-        const { name, type, props, children = [], value, engine } = templateObject || {}
+        const { name, type, props, children = [], value, engine, directives } = templateObject || {}
         const View = engine?.getDeclaration(name);
         const dealChildren: TemplateObject[] = []
         children?.forEach((child: TemplateObject) => {
@@ -97,7 +113,7 @@ function convertTemplate(template: TemplateObject[]) {
             //解析slot组件
             if (name === 'slot') {
                 const slotName = _props?.['name']
-                let slotObj = engine?.$slot.get(slotName)
+                let slotObj = engine?.$slot?.[slotName]
                 if (Tanfu.isTanfuView(View)) {
                     if (slotObj) dealChildren.push(slotObj)
                     else dealChildren.push(...child.children ?? [])
@@ -108,6 +124,14 @@ function convertTemplate(template: TemplateObject[]) {
                 return;
             }
             dealChildren.push(child)
+        })
+        directives?.forEach((binding) => {
+            const { name, expression } = binding
+            if(name === 'id' && props){
+                props['t-id'] = expression
+            }else{
+                getTanfu().directives.get(name)?.install(templateObject, binding)
+            }
         })
         if (!Tanfu.isTanfuView(View)) delete props?.$slot
         if (props) props['children'] = convertTemplate(dealChildren)

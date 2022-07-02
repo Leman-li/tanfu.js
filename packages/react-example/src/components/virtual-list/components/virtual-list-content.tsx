@@ -9,7 +9,6 @@ export interface VirtualListContentProps extends VirtualListProps {
 }
 export default function VirtualListContent(props: VirtualListContentProps) {
     const { listData, itemHeight, itemNode, className, style } = props
-    console.log('itemNode', itemNode)
     return (
         <div className={className} style={style}>
             {listData?.map((data, index) => (

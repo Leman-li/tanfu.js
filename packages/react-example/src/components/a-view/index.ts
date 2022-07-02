@@ -11,7 +11,7 @@ export default class AView extends TanfuView {
 
     template(): TemplateObject {
         return html`
-        <div t-id="div">Aview</div>
+        <div>Aview</div>
         `
     }
 }

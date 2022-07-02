@@ -7,7 +7,6 @@
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
     "@types/jest": "^27.0.1",
-    "@types/node": "^16.7.13",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "react": "^17.0.0",
@@ -15,6 +14,7 @@
     "react-scripts": "5.0.1",
     "tanfu-core": "*",
     "tanfu-react-plugin": "*",
+    "tanfu-loader": "*",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
   },
@@ -23,12 +23,6 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-app-rewired eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -48,6 +42,7 @@
     "@babel/preset-typescript": "^7.16.7",
     "babel-plugin-transform-typescript-metadata": "^0.3.2",
     "customize-cra": "^1.0.0",
+    "jsdom": "19.0.0",
     "react-app-rewired": "^2.2.1"
   }
 }

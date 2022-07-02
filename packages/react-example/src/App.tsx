@@ -11,6 +11,8 @@ import Item from './components/item';
 Tanfu.use(new TanfuReactPlugin())
 
 
+
+
 @Component({
   controllers: [AppController],
   providers: [AppRepository],
@@ -19,13 +21,13 @@ Tanfu.use(new TanfuReactPlugin())
 class App extends TanfuView {
 
   template(): TemplateObject {
-    return html`
-    sdaf
-    <div>App</div>
-    <virtual-list t-id="virtual-list">
-      <list-item  data-a="sdf" slot-name="itemNode"/>
-    </virtual-list>
+    const a = html`
+    <div t-id="element">hhh</div>
+    <div>bbbb<span>sss</span></div>
     `
+  
+  console.log(a,'---')
+  return a;
   }
 }
 

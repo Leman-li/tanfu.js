@@ -27,6 +27,11 @@ export default class AppController {
         })
     }
 
+    @EventListener('element', 'onClick')
+    click(){
+        console.log('点击了')
+    }
+
 
     @HostLifeCycle('didMount')
     hostDidMount(){

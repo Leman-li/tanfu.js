@@ -17,6 +17,7 @@ export default class CoreUpdateState<VM> {
     });
     private readonly store: Record<string, any> = {}
     public forceUpdateHook!: TanfuHook
+    public setStateHook = new TanfuHook(this.zone)
     private readonly needUpdateElements: Set<string> = new Set();
 
     constructor() {
@@ -28,6 +29,7 @@ export default class CoreUpdateState<VM> {
         if (typeof states === 'function') {
             return this.setState(states(this.store))
         }
+        this.setStateHook.interceptor.before.forEach(fn => fn('', states))
         Object.keys(states).forEach(tId => {
             const preState: Record<string, any> = get(this.store, tId, {});
             // @ts-ignore
@@ -42,6 +44,7 @@ export default class CoreUpdateState<VM> {
             this.needUpdateElements.add(tId)
             set(this.store, tId, nextState);
         })
+        this.setStateHook.interceptor.after.forEach(fn => fn('', states))
     }
 
     /** 获取状态 */
