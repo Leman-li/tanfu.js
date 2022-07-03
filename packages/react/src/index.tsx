@@ -9,7 +9,8 @@ import { nanoid } from 'nanoid';
 class TanfuReactAdapter extends TanfuAdapter {
     createRenderView(view: any, props: any, type: number, engine?: CoreEngine) {
         const tId = props?.['t-id']
-        let RenderUI = view;
+        if(props)props['tId'] = tId;
+        delete props?.['t-id']
         const reactProps: any = {}
         Object.keys(props ?? {}).forEach(key => {
             if(key === 'class'){
@@ -17,13 +18,14 @@ class TanfuReactAdapter extends TanfuAdapter {
             }
             else reactProps[formatToHump(key)] = props?.[key]
         })
+        let RenderUI = view;
         if (Tanfu.isTanfuView(view)) {
             const { view: ui, engine: tanfuEngine } = Tanfu.translateTanfuView(view, props)
             RenderUI = React.memo(function (props: any) {
                 return <ReactView props={props} engine={tanfuEngine} children={ui} />
             })
             if(tId) RenderUI = createElement(RenderUI, engine)
-            return <RenderUI key={nanoid()} {...reactProps} />
+            return <RenderUI key={nanoid()} {...reactProps}/>
         }
         if (type === Node.TEXT_NODE) {
             return view
@@ -80,10 +82,10 @@ type Element<P> = UIComponent<P>
 /** 创建视图元素 */
 function createElement<P = {}>(
     UI: React.ComponentType<P>,
-    engine?: CoreEngine
+    engine?: CoreEngine,
 ): Element<P> {
-    return React.memo(function (props: React.ComponentProps<typeof UI> & { tId?: string }) {
-        const { tId: id, ...otherProps } = props
+    return React.memo(function (props?: React.ComponentProps<typeof UI> & { tId?: string, directives?: Record<string,any> }) {
+        const { tId: id, directives, ...otherProps } = props ?? {}
         const [tId] = useState(id || String(Date.now()))
         useMemo(() => { tId && engine && engine.willMountHook.call(tId) }, [tId])
 
@@ -131,6 +133,7 @@ function createElement<P = {}>(
                 }
             }
         }, [])
+        if(directives?.hidden) return null;
         // @ts-ignore
         return <UI {...currentState} />
     })

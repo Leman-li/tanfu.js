@@ -129,6 +129,7 @@ function convertTemplate(template: TemplateObject[]) {
             const { name, expression } = binding
             if(name === 'id' && props){
                 props['t-id'] = expression
+                templateObject.tId = expression
             }else{
                 getTanfu().directives.get(name)?.install(templateObject, binding)
             }

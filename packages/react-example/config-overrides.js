@@ -1,3 +1,4 @@
+
 const {
   override,
   addDecoratorsLegacy,
@@ -37,7 +38,7 @@ module.exports = override(
   (config) => {
     config.module.rules.push({
       test: /\.(js|ts|tsx)$/,
-      loader: "tanfu-loader",
+      loader: path.resolve(__dirname,'./node_modules/tanfu-loader/es/index.js'),
       exclude: /node_modules/,
       options: {
         replace: process.env.NODE_ENV == 'production' ? './production/static/' : './development/static/'

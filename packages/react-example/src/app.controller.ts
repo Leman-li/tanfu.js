@@ -29,7 +29,14 @@ export default class AppController {
 
     @EventListener('element', 'onClick')
     click(){
-        console.log('点击了')
+      
+       const { isHide } = this.engine.getState('bbb') ?? {}
+       console.log('click', isHide)
+       this.engine.setState({
+        bbb: {
+            isHide: !isHide 
+        }
+       })
     }
 
 

@@ -134,21 +134,15 @@ importers:
 
   packages/react-example:
     specifiers:
-      '@babel/generator': '*'
-      '@babel/parser': '*'
       '@babel/plugin-proposal-class-properties': ^7.16.7
       '@babel/plugin-proposal-decorators': ^7.17.9
       '@babel/preset-typescript': ^7.16.7
-      '@babel/traverse': '*'
-      '@babel/types': '*'
       '@testing-library/jest-dom': ^5.14.1
       '@testing-library/react': ^13.0.0
       '@testing-library/user-event': ^13.2.1
       '@types/jest': ^27.0.1
-      '@types/node': ^16.7.13
       '@types/react': ^18.0.0
       '@types/react-dom': ^18.0.0
-      '@xmldom/xmldom': ^0.8.2
       babel-plugin-transform-typescript-metadata: ^0.3.2
       customize-cra: ^1.0.0
       jsdom: 19.0.0
@@ -161,16 +155,13 @@ importers:
       tanfu-react-plugin: '*'
       typescript: ^4.4.2
       web-vitals: ^2.1.0
-      xmldom: ^0.6.0
     dependencies:
       '@testing-library/jest-dom': registry.npmmirror.com/@testing-library/jest-dom/5.16.1
       '@testing-library/react': registry.npmmirror.com/@testing-library/react/13.2.0_react-dom@17.0.2+react@17.0.2
       '@testing-library/user-event': registry.npmmirror.com/@testing-library/user-event/13.5.0
       '@types/jest': registry.npmmirror.com/@types/jest/27.4.0
-      '@types/node': registry.npmmirror.com/@types/node/16.11.33
       '@types/react': registry.npmmirror.com/@types/react/18.0.9
       '@types/react-dom': registry.npmmirror.com/@types/react-dom/18.0.3
-      '@xmldom/xmldom': registry.npmmirror.com/@xmldom/xmldom/0.8.2
       react: registry.npmmirror.com/react/17.0.2
       react-dom: registry.npmmirror.com/react-dom/17.0.2_react@17.0.2
       react-scripts: registry.npmmirror.com/react-scripts/5.0.1_react@17.0.2+typescript@4.5.4
@@ -179,15 +170,10 @@ importers:
       tanfu-react-plugin: link:../react
       typescript: registry.npmmirror.com/typescript/4.5.4
       web-vitals: registry.npmmirror.com/web-vitals/2.1.4
-      xmldom: registry.npmmirror.com/xmldom/0.6.0
     devDependencies:
-      '@babel/generator': registry.npmmirror.com/@babel/generator/7.16.8
-      '@babel/parser': registry.npmmirror.com/@babel/parser/7.16.8
       '@babel/plugin-proposal-class-properties': registry.npmmirror.com/@babel/plugin-proposal-class-properties/7.16.7
       '@babel/plugin-proposal-decorators': registry.npmmirror.com/@babel/plugin-proposal-decorators/7.17.9
       '@babel/preset-typescript': registry.npmmirror.com/@babel/preset-typescript/7.16.7
-      '@babel/traverse': registry.npmmirror.com/@babel/traverse/7.16.8
-      '@babel/types': registry.npmmirror.com/@babel/types/7.17.10
       babel-plugin-transform-typescript-metadata: registry.npmmirror.com/babel-plugin-transform-typescript-metadata/0.3.2
       customize-cra: registry.npmmirror.com/customize-cra/1.0.0
       jsdom: registry.npmmirror.com/jsdom/19.0.0

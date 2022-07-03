@@ -1,4 +1,4 @@
-import { Controller, Engine, EventListener } from "tanfu-core";
+import { Controller, Engine, EventListener, HostLifeCycle } from "tanfu-core";
 
 @Controller()
 export default class AViewController {
@@ -6,6 +6,11 @@ export default class AViewController {
     value = 1;
 
     @Engine() engine: any
+
+    @HostLifeCycle('didMount')
+    didMount(){
+        console.log(this.engine.getProps(),'--')
+    }
 
     @EventListener('div','onClick')
     handleDivClick(){
