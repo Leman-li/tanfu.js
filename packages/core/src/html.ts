@@ -4,12 +4,16 @@ import CoreEngine from "./engine";
 export interface DirectiveBinding {
     // 不包含 t- 在 t- 和： 之间的值
     name: string
-    // 指令表达式
-    expression: string
-    // 传给指令的参数 如 t-demo:foo // foo
-    arg?: string
-    // 一个包含修饰符的对象 如 t-demo:foo.a.b  // {a: true, b: true }
-    modifiers?: Record<string, boolean>
+
+    // 指令的描述，至少为一个
+    descriptors: Array<{
+        // 指令表达式
+        expression: string
+        // 传给指令的参数 如 t-demo:foo // foo
+        arg?: string
+        // 一个包含修饰符的对象 如 t-demo:foo.a.b  // {a: true, b: true }
+        modifiers?: Record<string, boolean>
+    }>
 }
 
 export interface TemplateObject {

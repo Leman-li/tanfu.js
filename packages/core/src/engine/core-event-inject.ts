@@ -12,7 +12,7 @@ export default class CoreEventInject<VM> extends CoreUpdateState<VM> {
     public callbackHook: TanfuHook = new TanfuHook(this.zone)
 
     /** 组件加载完成 */
-    didMount(tId: ElementId<VM>, fn: () => void) {
+    didMount(tId: ElementId<VM>, fn: (dom?: HTMLElement) => void) {
         this.didMountHook.on(tId, fn)
     }
 

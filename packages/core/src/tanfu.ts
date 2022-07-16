@@ -6,9 +6,7 @@ import TanfuView from "./view"
 import { ComponentMetadata } from "./decorators/component"
 import { TemplateObject } from "./html"
 import { isObject } from "./util"
-import Directive from "./directive"
-
-
+import TanfuDirective from "./directive"
 
 export type RenderView = any
 
@@ -18,7 +16,7 @@ export default class Tanfu {
 
     private readonly declarations: Array<{ name: string, value: any }> = []
     private adapter!: TanfuAdapter
-    public directives: Map<string, Directive> = new Map()
+    public directives: Map<string, TanfuDirective> = new Map()
 
     getAdapter() {
         return this.adapter
@@ -40,11 +38,11 @@ export default class Tanfu {
         this.adapter = adapter
     }
 
-    directive(name: string, directive: Directive) {
+    directive(name: string, directive: TanfuDirective) {
         this.directives.set(name, directive)
     }
 
-    static directive(name: string, directive: Directive) {
+    static directive(name: string, directive: TanfuDirective) {
         getTanfu().directive(name, directive)
     }
 
@@ -126,7 +124,8 @@ function convertTemplate(template: TemplateObject[]) {
             dealChildren.push(child)
         })
         directives?.forEach((binding) => {
-            const { name, expression } = binding
+            const { name, descriptors } = binding
+            const { expression } = descriptors[0]
             if(name === 'id' && props){
                 props['t-id'] = expression
                 templateObject.tId = expression

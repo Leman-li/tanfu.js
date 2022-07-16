@@ -1,9 +1,8 @@
 import { DirectiveBinding, TemplateObject } from "./html";
 
+export default class TanfuDirective {
 
-export default class Directive {
-
-    install(template: TemplateObject, binding: DirectiveBinding) {
+    install(template: TemplateObject, bindings: DirectiveBinding) {
 
     }
 }

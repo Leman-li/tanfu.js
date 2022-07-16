@@ -2,21 +2,23 @@ import React, { useContext, useEffect, useMemo, useReducer, useRef, useState } f
 import get from 'lodash.get'
 import reactDeclarations from './declarations'
 import Tanfu, { CoreEngine, TanfuAdapter, TanfuPlugin } from 'tanfu-core';
-import { HOST_LIFECYCLE_ID } from 'tanfu-core/es/constants'
+import { HOST_LIFECYCLE_ID, INNER_DIRECTIVES } from 'tanfu-core/es/constants'
 import { nanoid } from 'nanoid';
+import { HideDirective, ModelDirective } from './directives';
 
 
 class TanfuReactAdapter extends TanfuAdapter {
     createRenderView(view: any, props: any, type: number, engine?: CoreEngine) {
         const tId = props?.['t-id']
-        if(props)props['tId'] = tId;
+        if (tId) props['tId'] = tId;
         delete props?.['t-id']
         const reactProps: any = {}
         Object.keys(props ?? {}).forEach(key => {
-            if(key === 'class'){
-                reactProps['className'] = props['class']
-            }
-            else reactProps[formatToHump(key)] = props?.[key]
+            let newKey = '';
+            if (key === 'class') newKey = 'className'
+            else newKey = formatToHump(key)
+            const descriptor = Object.getOwnPropertyDescriptor(props, key);
+            if (descriptor) Object.defineProperty(reactProps, newKey, descriptor)
         })
         let RenderUI = view;
         if (Tanfu.isTanfuView(view)) {
@@ -24,8 +26,8 @@ class TanfuReactAdapter extends TanfuAdapter {
             RenderUI = React.memo(function (props: any) {
                 return <ReactView props={props} engine={tanfuEngine} children={ui} />
             })
-            if(tId) RenderUI = createElement(RenderUI, engine)
-            return <RenderUI key={nanoid()} {...reactProps}/>
+            if (tId) RenderUI = createElement(RenderUI, engine)
+            return <RenderUI key={nanoid()} {...reactProps} />
         }
         if (type === Node.TEXT_NODE) {
             return view
@@ -43,6 +45,8 @@ export default class TanfuReactPlugin extends TanfuPlugin {
     install(tanfu: Tanfu) {
         tanfu.addDeclarations(reactDeclarations)
         tanfu.addAdapter(new TanfuReactAdapter())
+        tanfu.directive('hide', new HideDirective())
+        tanfu.directive('model', new ModelDirective())
     }
 }
 
@@ -84,8 +88,9 @@ function createElement<P = {}>(
     UI: React.ComponentType<P>,
     engine?: CoreEngine,
 ): Element<P> {
-    return React.memo(function (props?: React.ComponentProps<typeof UI> & { tId?: string, directives?: Record<string,any> }) {
-        const { tId: id, directives, ...otherProps } = props ?? {}
+    return React.memo(function (props?: React.ComponentProps<typeof UI> & { tId?: string }) {
+        // @ts-ignore
+        const { tId: id, [INNER_DIRECTIVES]: innerDirectives, ...otherProps } = props ?? {}
         const [tId] = useState(id || String(Date.now()))
         useMemo(() => { tId && engine && engine.willMountHook.call(tId) }, [tId])
 
@@ -121,10 +126,11 @@ function createElement<P = {}>(
                 })
             }
         })
+        const ref = useRef(null)
         useEffect(() => {
             if (tId) {
                 engine?.forceUpdateHook.on(tId, forceUpdate)
-                engine?.didMountHook?.call(tId)
+                engine?.didMountHook?.call(tId, ref.current)
             }
             return () => {
                 if (tId) {
@@ -133,7 +139,12 @@ function createElement<P = {}>(
                 }
             }
         }, [])
-        if(directives?.hidden) return null;
+        // @ts-ignore
+        if (props?.[INNER_DIRECTIVES]?.hidden) return null;
+        // @ts-ignore
+        console.log(UI.$$typeof, UI.$$typeof?.toString() === 'Symbol(react.forward_ref)')
+        // @ts-ignore
+        if(UI.$$typeof?.toString() === 'Symbol(react.forward_ref)') currentState.ref = ref
         // @ts-ignore
         return <UI {...currentState} />
     })

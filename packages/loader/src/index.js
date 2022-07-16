@@ -68,22 +68,27 @@ function convertNodes(nodes) {
                 const props = {}
                 for (let i = 0; i < attributes?.length; i++) {
                     const { name = '', value } = attributes.item(i) || {}
-                    console.log(name, value)
+                    // 如果名称以 t- 开头 说明是指令
                     if (name?.startsWith('t-')) {
-                        const splitArr = name?.split(":")
-                        const _expression = value;
-                        const _name = splitArr[0].replaceAll("t-", "")
-                        const other = splitArr?.[1]?.split(".")
-                        let arg, modifiers = {};
-                        other?.forEach((v, i) => {
-                            if (i === 0) arg = v;
-                            else modifiers[v] = true
+                        const _name = name?.match(/t-(\w+)/g)?.[0]?.replaceAll("t-", "");
+                        const arg = name?.match(/\:(\w+)/g)?.[0]?.replaceAll(":", "")
+                        let modifiers = {};
+                        name?.match(/\.(\w+)/g)?.forEach(key => {
+                            modifiers[key.replaceAll(".", "")] = true
                         })
-                        directives.push({
-                            name: _name,
-                            expression: _expression,
+                        // 执行的描述
+                        const descriptor = {
+                            expression: value,
                             arg,
                             modifiers
+                        }
+                        const directive = directives.find(o => o.name === _name)
+                        // 如果存在，则直接推送
+                        if(directive) directive.descriptors.push(descriptor)
+                        else
+                        directives.push({
+                            name: _name,
+                            descriptors: [descriptor]
                         })
 
                     } else props[`${name}`] = value

@@ -11,6 +11,7 @@ function createDeclaration(tag: keyof JSX.IntrinsicElements) {
     const Tag = htmlTag[tag]
     return {
         name: tag,
-        value: (props: any) => <Tag {...props} />
+        // @ts-ignore
+        value: React.forwardRef((props: any, ref) => <Tag {...props} ref={ref}/>)
     }
 }
