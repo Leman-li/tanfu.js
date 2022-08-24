@@ -16,10 +16,6 @@ export default class CoreEventInject<VM> extends CoreUpdateState<VM> {
         this.didMountHook.on(tId, fn)
     }
 
-    update(tId: ElementId<VM>, fn: () => void) {
-        this.updateHook.on(tId, fn)
-    }
-
     /** 组件加载完成 */
     willMount(tId: ElementId<VM>, fn: () => void) {
         this.willMountHook.on(tId, fn)

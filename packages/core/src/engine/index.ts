@@ -34,6 +34,10 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
                 })
             }
         })
+        this.updateHook.on(HOST_LIFECYCLE_ID,()=>{
+            const state = view.view.propsToState(this.props)
+            this.setState(state)
+        })
     }
 
     /** 添加声明 */

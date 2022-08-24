@@ -14,7 +14,7 @@ const GLOABAL_TANFU = '_$GLOBAL_TANFU$_'
 const GLOBAL_DECLARATIONS = '_$GLOBAL_DECLARATIONS$_'
 const TANFU_CHILD_VIEW = 'tanfu:child_view '
 const TANFU_ENGINE = 'tanfu:engine'
-
+const TANFU_METHOD_ARGS = "tanfu:method_args"
 const INNER_DIRECTIVES = '__INNER_DIRECTIVES__'
 
 export {
@@ -34,5 +34,6 @@ export {
     TANFU_CHILD_VIEW,
     TANFU_COMPONENT_WATER_MARK,
     TANFU_ENGINE,
-    INNER_DIRECTIVES
+    INNER_DIRECTIVES,
+    TANFU_METHOD_ARGS
 }

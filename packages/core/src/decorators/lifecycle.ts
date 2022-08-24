@@ -2,7 +2,7 @@ import { HOST_LIFECYCLE_ID, TANFU_LIFECYCLE } from "../constants";
 
 export type LifeCycleName = 'didMount' | 'willUnmount' | 'willMount'
 
-export type HostLifeCycleName = LifeCycleName | 'update'
+export type HostLifeCycleName = LifeCycleName
 
 export interface LifeCycleMetadata {
     [tId: string]: Record<LifeCycleName, string[]>

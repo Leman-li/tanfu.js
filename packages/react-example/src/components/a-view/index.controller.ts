@@ -14,6 +14,7 @@ export default class AViewController {
 
     @EventListener('div','onClick')
     handleDivClick(){
+        console.log('click')
         this.engine.setState({
             div: {
                 children: (this.value = this.value + 1)

@@ -11,15 +11,17 @@ export default class CoreMetadataInject<VM> extends CoreEventInject<VM> {
     public ioc!: IoCContainer;
     public props: Record<string, any> = {}
 
-    constructor(providers: Providers, controllers: Controllers){
+    constructor(providers: Providers, controllers: Controllers) {
         super()
         this.ioc = new IoCContainer([
             ...providers,
-            { provide: TANFU_ENGINE , useValue: {
-                setState: this.setState.bind(this),
-                getState: this.getState.bind(this),
-                getProps: () => this.props
-            } as TanfuEngine<VM> }
+            {
+                provide: TANFU_ENGINE, useValue: {
+                    setState: this.setState.bind(this),
+                    getState: this.getState.bind(this),
+                    getProps: () => this.props
+                } as TanfuEngine<VM>
+            }
         ], controllers)
         controllers.forEach(Controller => {
             const controller = this.ioc.getController(Controller.name)
@@ -60,7 +62,10 @@ export default class CoreMetadataInject<VM> extends CoreEventInject<VM> {
             Object.keys(data[tId]).forEach(listenerName => {
                 // @ts-ignore
                 data[tId][listenerName].forEach(methodName => {
-                    const fn = controller?.[methodName]?.bind?.(controller)
+                    const fn: any = (...args: any[]) => {
+                        const excuteFn = controller?.[methodName]?.bind?.(controller, ...args)
+                        return excuteFn?.()
+                    }
                     _this.injectCallback(tId as any, listenerName as any, fn)
                 })
             })

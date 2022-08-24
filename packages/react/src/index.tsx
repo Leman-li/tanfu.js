@@ -22,10 +22,10 @@ class TanfuReactAdapter extends TanfuAdapter {
         })
         let RenderUI = view;
         if (Tanfu.isTanfuView(view)) {
-            const { view: ui, engine: tanfuEngine } = Tanfu.translateTanfuView(view, props)
-            RenderUI = React.memo(function (props: any) {
+            RenderUI =function (props: any) {
+                const { view: ui, engine: tanfuEngine } = useMemo(()=>Tanfu.translateTanfuView(view, props), [])
                 return <ReactView props={props} engine={tanfuEngine} children={ui} />
-            })
+            }
             if (tId) RenderUI = createElement(RenderUI, engine)
             return <RenderUI key={nanoid()} {...reactProps} />
         }

@@ -4,6 +4,24 @@ import get from 'lodash.get'
 import set from 'lodash.set'
 import { produce } from 'immer'
 
+let ignore_update_flag = false;
+
+/** 
+ * 忽略更新
+ * 使用： ignoreUpdate(()=>{
+ *   engine.setState({
+ *      elementId: {
+ *         a: 1
+ *        }
+ *    })
+ * })
+ *  */
+export function ignoreUpdate(fn: () => void) {
+    ignore_update_flag = true;
+    fn()
+    ignore_update_flag = false;
+}
+
 export default class CoreUpdateState<VM> {
     public zone: Zone = Zone.current.fork({
         name: String(Date.now()),
@@ -11,8 +29,10 @@ export default class CoreUpdateState<VM> {
             engine: this,
         },
         onInvokeTask: (delegate, currentZone, targetZone, task, ...args) => {
-            if (this.zone === currentZone) delegate.invokeTask(targetZone, task, ...args)
-            this.notifyUpdate()
+            if (this.zone === currentZone) {
+                delegate.invokeTask(targetZone, task, ...args)
+                this.notifyUpdate()
+            }
         },
     });
     private readonly store: Record<string, any> = {}
@@ -41,7 +61,7 @@ export default class CoreUpdateState<VM> {
                 })
             })
             if (preState === nextState) return;
-            this.needUpdateElements.add(tId)
+            if (!ignore_update_flag) this.needUpdateElements.add(tId)
             set(this.store, tId, nextState);
         })
         this.setStateHook.interceptor.after.forEach(fn => fn('', states))
