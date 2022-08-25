@@ -1,4 +1,4 @@
-import { Controller, Engine, EventListener, HostLifeCycle, Inject, LifeCycle } from "tanfu-core";
+import { Controller, Engine, EventListener, HostLifeCycle, Inject, LifeCycle, TId } from "tanfu-core";
 import type TanfuEngine from "tanfu-core/es/engine/tanfu-engine";
 import AppRepository from "./app.repository";
 
@@ -27,9 +27,10 @@ export default class AppController {
         })
     }
 
+    @EventListener('ssss', 'onClick')
     @EventListener('element', 'onClick')
-    click(){
-        console.log('点击了')
+    click(event: Event, @TId() tid: string){
+        console.log('点击了', tid, event.target)
         this.engine.setState({
             modalView: {
                 visible: true

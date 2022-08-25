@@ -7,6 +7,25 @@ export enum TanfuMethodParamType {
 
 type ParamData = string | number | object
 
+export type MethodArgsMetadata = {
+    [key: string]: {
+        index: number,
+        data: ParamData
+    }
+}
+
+/** 找到参数装饰器的索引 */
+export function findArgsDecoratorIndexs(paramtype: TanfuMethodParamType, target: Object, methodName: string) {
+    const md: MethodArgsMetadata = Reflect.getMetadata(TANFU_METHOD_ARGS, target, methodName);
+    const returnIndexes: number[] = []
+    Object.keys(md ?? {}).forEach(key => {
+        if (key.startsWith(`${paramtype}`)) {
+            returnIndexes.push(md[key].index)
+        }
+    })
+    return returnIndexes.sort((a, b) => b - a);
+}
+
 function assignMetadata(
     args: object,
     paramtype: TanfuMethodParamType,

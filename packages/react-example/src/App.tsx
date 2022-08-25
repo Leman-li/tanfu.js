@@ -64,10 +64,11 @@ class ModalView extends TanfuView {
 })
 class App extends TanfuView {
 
+
   template(): TemplateObject {
     const a = html`
     <div t-id="element" t-number:height="100">hhh</div>
-    <div>bbbb<span>sss</span></div>
+    <div t-id="ssss">bbbb<span>sss</span></div>
     <a-view t-id="bbb" t-hide="isHide"/>
     <modal-view t-id="modalView"/>
     `
