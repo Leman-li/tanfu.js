@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import Tanfu, { Component, TanfuView, html, Controller, LifeCycle, HostLifeCycle, EventListener, Engine } from 'tanfu-core';
+import Tanfu, { Component, TanfuView, html, Controller,WatchHostElement, HostLifeCycle, EventListener, Engine } from 'tanfu-core';
 import { TemplateObject } from 'tanfu-core/es/html';
 import TanfuReactPlugin from 'tanfu-react-plugin';
 import AppController from './app.controller';
@@ -19,19 +19,6 @@ class ModalController {
   @Engine() engine!: TanfuEngine
 
 
-   @HostLifeCycle('didMount')
-  didMount(){
-    console.log('modal', this.engine)
-  }
-
-  @EventListener('modal', 'onCancel')
-  onClose(){
-    this.engine.setState({
-      modal: {
-        visible: false
-      }
-    })
-  }
 }
 
 @Component({
@@ -43,13 +30,21 @@ class ModalController {
 })
 class ModalView extends TanfuView {
 
+  @Engine() engine!: TanfuEngine
+
   propsToState(props: Record<string, any>): Record<string, Record<string, any>> {
     console.log('props', props)
     return {
       modal: {
-        visible: props.visible
+        visible: props.visible,
+        onCancel: () => props?.onCancel?.(false)
       }
     }
+  }
+
+  @WatchHostElement(['visible'])
+  watchModal(){
+    console.log('propschange', this.engine.getProps())
   }
 
   template(): TemplateObject {
@@ -70,7 +65,7 @@ class App extends TanfuView {
     <div t-id="element" t-number:height="100">hhh</div>
     <div t-id="ssss">bbbb<span>sss</span></div>
     <a-view t-id="bbb" t-hide="isHide"/>
-    <modal-view t-id="modalView"/>
+    <modal-view t-model.value="visible" t-model.change="onCancel" t-id="modalView"/>
     `
 
     console.log(a, '---')

@@ -1,9 +1,13 @@
-import { TANFU_WATCHELEMENT } from "../constants"
+import { HOST_T_ID, TANFU_WATCHELEMENT } from "../constants"
 
 export interface WatchElementMetadata {
     [tId: string]: {
         [propertyName: string]: string[]
     }
+}
+
+export function WatchHostElement(propertyNames: string []){
+    return WatchElement(HOST_T_ID, propertyNames)
 }
 
 /** 监听属性变化 */

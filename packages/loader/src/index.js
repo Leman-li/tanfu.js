@@ -121,6 +121,7 @@ function getLiteral(value) {
     if (t.isExpression(value)) return value;
     if (typeof value === 'string') return t.stringLiteral(value)
     if (typeof value === 'number') return t.numericLiteral(value)
+    if (typeof value === 'boolean') return t.booleanLiteral(value)
     if (Object.prototype.toString.call(value)?.includes('Object')) return ObjectExpression(value)
     if (Object.prototype.toString.call(value).includes('Array')) return ArrayExpression(value)
     return t.nullLiteral()

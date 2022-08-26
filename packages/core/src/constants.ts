@@ -8,6 +8,7 @@ const DESIGN_PARAMTYPES = 'design:paramtypes'
 const DESIGN_PARAMTERS = 'design:paramters'
 const TANFU_INJECT = 'tanfu:inject'
 const HOST_LIFECYCLE_ID = 'tanfu:hostLifecycle_id'
+const HOST_T_ID = 'tanfu:hostTId'
 const TANFU_COMPONENT = 'tanfu:component'
 const TANFU_COMPONENT_WATER_MARK = 'tanfu:component_water_mark'
 const GLOABAL_TANFU = '_$GLOBAL_TANFU$_'
@@ -35,5 +36,6 @@ export {
     TANFU_COMPONENT_WATER_MARK,
     TANFU_ENGINE,
     INNER_DIRECTIVES,
-    TANFU_METHOD_ARGS
+    TANFU_METHOD_ARGS,
+    HOST_T_ID
 }

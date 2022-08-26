@@ -14,7 +14,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
     private readonly parentEngine!: CoreEngine | null | undefined
     private readonly childViews = new Map<string, any>();
     private hostView!: TanfuView;
-    public $slot: Record<string,TemplateObject> = {}
+    public $slot: Record<string, TemplateObject> = {}
 
     constructor(parentEngine: CoreEngine, providers: Providers, controllers: Controllers, view: ViewObject) {
         super(providers, controllers)
@@ -34,8 +34,16 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
                 })
             }
         })
-        this.updateHook.on(HOST_LIFECYCLE_ID,()=>{
-            const state = view.view.propsToState(this.props)
+        this.updateHook.on(HOST_LIFECYCLE_ID, () => {
+            const state: VM = view.view.propsToState(this.props)
+            Object.keys(state).forEach(tId => {
+                if (Object.prototype.toString.call(state[tId]) === '[object Object]')
+                    Object.keys(state[tId] ?? {}).forEach(name => {
+                        if (typeof state[tId]?.[name] === 'function') {
+                            this.callbackHook.on([tId, name], state[tId]?.[name])
+                        }
+                    })
+            })
             this.setState(state)
         })
     }

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useReducer, useRef, useState } f
 import get from 'lodash.get'
 import reactDeclarations from './declarations'
 import Tanfu, { CoreEngine, TanfuAdapter, TanfuPlugin } from 'tanfu-core';
-import { HOST_LIFECYCLE_ID, INNER_DIRECTIVES } from 'tanfu-core/es/constants'
+import { HOST_LIFECYCLE_ID, INNER_DIRECTIVES, HOST_T_ID } from 'tanfu-core/es/constants'
 import { nanoid } from 'nanoid';
 import { HideDirective, ModelDirective } from './directives';
 
@@ -22,8 +22,8 @@ class TanfuReactAdapter extends TanfuAdapter {
         })
         let RenderUI = view;
         if (Tanfu.isTanfuView(view)) {
-            RenderUI =function (props: any) {
-                const { view: ui, engine: tanfuEngine } = useMemo(()=>Tanfu.translateTanfuView(view, props), [])
+            RenderUI = function (props: any) {
+                const { view: ui, engine: tanfuEngine } = useMemo(() => Tanfu.translateTanfuView(view, props), [])
                 return <ReactView props={props} engine={tanfuEngine} children={ui} />
             }
             if (tId) RenderUI = createElement(RenderUI, engine)
@@ -76,6 +76,15 @@ function ReactView({ children, engine, props }: ReactViewProps) {
             engine.willUnmountHook.call(HOST_LIFECYCLE_ID)
         }
     }, [])
+
+    const preProps = usePrevious(props)
+    useEffect(() => {
+        engine.watchElementHook.fork(HOST_T_ID).forEach((dep) => {
+            if (get(props, dep) !== get(preProps, dep)) {
+                engine?.watchElementHook.call([HOST_T_ID, dep])
+            }
+        })
+    }, [props])
     return <>{children}</>
 }
 
@@ -142,9 +151,7 @@ function createElement<P = {}>(
         // @ts-ignore
         if (props?.[INNER_DIRECTIVES]?.hidden) return null;
         // @ts-ignore
-        console.log(UI.$$typeof, UI.$$typeof?.toString() === 'Symbol(react.forward_ref)')
-        // @ts-ignore
-        if(UI.$$typeof?.toString() === 'Symbol(react.forward_ref)') currentState.ref = ref
+        if (UI.$$typeof?.toString() === 'Symbol(react.forward_ref)') currentState.ref = ref
         // @ts-ignore
         return <UI {...currentState} />
     })

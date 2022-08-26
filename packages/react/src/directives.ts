@@ -29,7 +29,7 @@ export class ModelDirective extends TanfuDirective {
             // @ts-ignore
             engine?.injectCallback(tId, changeExpression, function(value: any){
                 engine.setState({
-                    tId: {
+                    [tId]: {
                         [valueExpression]: value
                     }
                 })

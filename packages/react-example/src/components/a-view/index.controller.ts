@@ -1,4 +1,4 @@
-import { Controller, Engine, EventListener, HostLifeCycle } from "tanfu-core";
+import { Controller, Engine, EventListener, HostLifeCycle, WatchElement } from "tanfu-core";
 
 @Controller()
 export default class AViewController {

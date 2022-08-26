@@ -76,7 +76,7 @@ export default class Tanfu {
         )
         engine.addDeclarations(declarations)
         engine.$slot = props?.['$slot']
-        function _setEngine(template: TemplateObject[]){
+        function _setEngine(template: TemplateObject[]) {
             template.forEach(item => {
                 item.engine = engine
                 _setEngine(item.children ?? [])
@@ -123,13 +123,15 @@ function convertTemplate(template: TemplateObject[]) {
             }
             dealChildren.push(child)
         })
+        const idDirective = directives?.find(directive => directive.name === 'id')
+        if (idDirective && props) {
+            const { expression: tId } = idDirective.descriptors[0]
+            props['t-id'] = tId;
+            templateObject.tId = tId;
+        }
         directives?.forEach((binding) => {
-            const { name, descriptors } = binding
-            const { expression } = descriptors[0]
-            if(name === 'id' && props){
-                props['t-id'] = expression
-                templateObject.tId = expression
-            }else{
+            const { name } = binding
+            if (name !== 'id') {
                 getTanfu().directives.get(name)?.install(templateObject, binding)
             }
         })
