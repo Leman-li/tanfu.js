@@ -21,8 +21,8 @@ module.exports = function (source) {
         ]
     })
     traverse(ast, {
-        ClassDeclaration(path) {
-            if (t.isIdentifier(path.node?.superClass) && path.node.superClass.name === 'TanfuView') {
+        ClassMethod(path){
+            if(t.isIdentifier(path.node.key) && path.node.key.name === 'template'){
                 traverse(path.node, {
                     TaggedTemplateExpression(_path) {
                         if (t.isIdentifier(_path.node.tag) && _path.node.tag.name === 'html') {
@@ -36,7 +36,7 @@ module.exports = function (source) {
                     },
                 }, path.scope, null, path.parentPath)
             }
-        }
+        },
     })
     const { code } = generate(ast, { /* options */ }, source);
     return code

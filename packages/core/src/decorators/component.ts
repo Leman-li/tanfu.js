@@ -10,22 +10,35 @@ export type ComponentOptions = {
 
 export type ComponentMetadata = ComponentOptions
 
+/** 数组去重 */
+function filterRepetition<T>(arr: T[], filterFn?: (value: T, index: number) => boolean) {
+    const _fn = filterFn ?? function (value: T, index: number) {
+        return arr.lastIndexOf(value) === index
+    }
+    return arr.filter(_fn)
+}
+
+function getName(name: string) {
+    const returnName = name?.replace(/([A-Z])/g, '-$1').toLowerCase();
+    return returnName.startsWith('-') ? returnName.slice(1) : returnName
+}
+
 /** 用以声明该类属于视图组件 */
 export default function Component(options?: ComponentOptions): ClassDecorator {
-    const { declarations = [] } = options || {}
-    const metaData: ComponentMetadata = {
-        ...options,
-        declarations: declarations.map(declaration => {
-            if (declaration.value) {
-                return declaration
-            } else {
-                return {
-                    name: declaration.name?.replace(/([A-Z])/g, '-$1').toLowerCase().slice(1), value: declaration
-                }
-            }
-        })
-    }
+
     return function (target: any) {
+        const { declarations = [], controllers = [], providers = [], name } = options || {}
+        const metaData: ComponentMetadata = Reflect.getMetadata(TANFU_COMPONENT, target) ?? {}
+        metaData.name = name ?? metaData.name;
+        metaData.controllers = filterRepetition((metaData.controllers ?? []).concat(controllers))
+        metaData.providers = filterRepetition((metaData.providers ?? []).concat(providers))
+        const mergeDeclarations: Array<{ name: string, value: any }> = (metaData.declarations ?? []).concat(declarations.map(declaration => ({
+            name: getName(declaration.name),
+            value: declaration.value ?? declaration
+        })
+        ))
+        const mergeDeclarationNames = mergeDeclarations?.map(item => item.name)
+        metaData.declarations = filterRepetition(mergeDeclarations, (value, index) => mergeDeclarationNames.lastIndexOf(value.name) === index)
         Reflect.defineMetadata(TANFU_COMPONENT, metaData, target)
         Reflect.defineMetadata(TANFU_COMPONENT_WATER_MARK, true, target)
     }

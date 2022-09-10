@@ -32,6 +32,10 @@ export default class TanfuHook {
         return hook
     }
 
+    isExist(name: string | string[]){
+        return !!get(this.listeners, name)
+    }
+
     forEach(fn: (name: string, value: any, once?: boolean) => void) {
         Object.keys(this.listeners).forEach(key => fn?.(key, this.listeners[key]))
         Object.keys(this.onceListeners).forEach(key => fn?.(key, this.onceListeners[key], true))
@@ -44,6 +48,7 @@ export default class TanfuHook {
         if (!map.has(fn)) set(this.listeners, name, map.set(fn, fn))
     }
 
+    /** 注册后只触发一次 */
     once(name: string | string[], fn: HookFunction) {
         const map = get(this.onceListeners, name, new Map())
         if (!map.has(fn)) set(this.onceListeners, name, map.set(fn, fn))

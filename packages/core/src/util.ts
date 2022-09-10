@@ -19,6 +19,15 @@ export function getParameterNames(fn: Function) {
         : result;
 }
 
-export function isObject(it: any){
+export function isObject(it: any) {
     return typeof it === 'object' ? it !== null : typeof it === 'function'
+}
+
+/** 排除对象中的某些字段 */
+export function omit(object: Record<string, any> = {}, ...omitNames: string[]) {
+    const returnObject = { ...object };
+    omitNames.forEach(name => {
+        delete returnObject[name]
+    })
+    return returnObject
 }

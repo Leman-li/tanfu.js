@@ -1,6 +1,9 @@
+import Component, { ComponentOptions } from "./decorators/component";
 import { ViewModel } from "./engine/types";
 import html, { TemplateObject } from "./html";
 import { DispatchEvent } from "./types";
+import { omit } from "./util";
+
 
 export default class TanfuView<P = Record<string, any>, VM extends ViewModel = any> {
 

@@ -39,7 +39,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
             Object.keys(state).forEach(tId => {
                 if (Object.prototype.toString.call(state[tId]) === '[object Object]')
                     Object.keys(state[tId] ?? {}).forEach(name => {
-                        if (typeof state[tId]?.[name] === 'function') {
+                        if (typeof state[tId]?.[name] === 'function' && !this.callbackHook.isExist([tId, name])) {
                             this.callbackHook.on([tId, name], state[tId]?.[name])
                         }
                     })

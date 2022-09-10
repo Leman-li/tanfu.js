@@ -13,7 +13,6 @@ export function WatchHostElement(propertyNames: string []){
 /** 监听属性变化 */
 export default function WatchElement(tId: string, propertyNames: string[]) {
     return function (target: any, methodName: string, descriptor: PropertyDescriptor) {
-        descriptor.value = descriptor.value.bind(target)
         const metaData: WatchElementMetadata = (Reflect.getMetadata(TANFU_WATCHELEMENT, target) ?? {})
         metaData[tId] = (metaData[tId] ?? {})
         propertyNames?.forEach(propertyName => {
@@ -23,7 +22,7 @@ export default function WatchElement(tId: string, propertyNames: string[]) {
             }
         })
 
-        Reflect.defineMetadata(TANFU_WATCHELEMENT, descriptor.value, target)
+        Reflect.defineMetadata(TANFU_WATCHELEMENT, metaData , target)
         return descriptor
     }
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import Tanfu, { Component, TanfuView, html, Controller,WatchHostElement, HostLifeCycle, EventListener, Engine } from 'tanfu-core';
+import Tanfu, { Component, TanfuView, html, Controller, WatchHostElement, HostLifeCycle, EventListener, Engine, WatchElement } from 'tanfu-core';
 import { TemplateObject } from 'tanfu-core/es/html';
 import TanfuReactPlugin from 'tanfu-react-plugin';
 import AppController from './app.controller';
@@ -18,6 +18,16 @@ class ModalController {
 
   @Engine() engine!: TanfuEngine
 
+  @HostLifeCycle('didMount')
+  didMount() {
+    console.log(this.engine)
+  }
+
+  @WatchHostElement(['visible'])
+  watchModal() {
+    console.log('propschange', this.engine.getProps())
+  }
+
 
 }
 
@@ -28,12 +38,9 @@ class ModalController {
     value: Modal
   }]
 })
-class ModalView extends TanfuView {
-
-  @Engine() engine!: TanfuEngine
+class ModalView1 extends TanfuView {
 
   propsToState(props: Record<string, any>): Record<string, Record<string, any>> {
-    console.log('props', props)
     return {
       modal: {
         visible: props.visible,
@@ -42,34 +49,57 @@ class ModalView extends TanfuView {
     }
   }
 
-  @WatchHostElement(['visible'])
-  watchModal(){
-    console.log('propschange', this.engine.getProps())
-  }
 
   template(): TemplateObject {
-    return html`<ant-modal title="TanfuView" t-id="modal"></ant-modal>`
+    return html`<ant-modal title="TanfuView" t-id="modal">afdaf</ant-modal>`
   }
 }
+
+@Controller()
+class ExtendController {
+
+  @Engine() engine!: TanfuEngine
+
+  @EventListener('modal', 'onOk')
+  onOk() {
+    console.log('点击O看了')
+    this.engine.getProps()?.onCancel?.(false)
+
+  }
+}
+
+
+@Component({
+  controllers: [ExtendController]
+})
+class ModalView extends ModalView1 {
+
+  template(): TemplateObject {
+    return html`<div>
+      <ant-modal title="TanfuView" t-id="modal">afdaf</ant-modal>
+  <span>sdfafasfd</span>
+</div>`
+
+  }
+}
+
+
 
 @Component({
   controllers: [AppController],
   providers: [AppRepository],
-  declarations: [AView, VirtualList, { name: 'list-item', value: Item },ModalView]
+  declarations: [AView, VirtualList, { name: 'list-item', value: Item }, ModalView]
 })
 class App extends TanfuView {
 
 
   template(): TemplateObject {
-    const a = html`
+    const app = html`
     <div t-id="element" t-number:height="100">hhh</div>
-    <div t-id="ssss">bbbb<span>sss</span></div>
-    <a-view t-id="bbb" t-hide="isHide"/>
-    <modal-view t-model.value="visible" t-model.change="onCancel" t-id="modalView"/>
+    <modal-view t-model.value="visible" t-model.change="onCancel" t-id="modalView" />
     `
-
-    console.log(a, '---')
-    return a;
+    console.log(app)
+    return app
   }
 }
 

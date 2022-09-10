@@ -52,7 +52,7 @@ export default class CoreMetadataInject<VM> extends CoreEventInject<VM> {
         Object.keys(data).forEach(tId => {
             Object.keys(data[tId]).forEach(propertyName => {
                 // @ts-ignore
-                Object.keys(data[tId][propertyName]).forEach(methodName => this.watchElement(tId, controller?.[methodName]?.bind?.(controller), [propertyName]))
+                data[tId][propertyName]?.forEach(methodName => this.watchElement(tId, controller?.[methodName]?.bind?.(controller), [propertyName]))
             })
         })
     }

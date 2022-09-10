@@ -84,7 +84,7 @@ function ReactView({ children, engine, props }: ReactViewProps) {
                 engine?.watchElementHook.call([HOST_T_ID, dep])
             }
         })
-    }, [props])
+    })
     return <>{children}</>
 }
 

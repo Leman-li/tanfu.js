@@ -36,14 +36,7 @@ export default class AppController {
                 visible: true
             }
         })
-      
-    //    const { isHide } = this.engine.getState('bbb') ?? {}
-    //    console.log('click', isHide)
-    //    this.engine.setState({
-    //     bbb: {
-    //         isHide: !isHide 
-    //     }
-    //    })
+    
     }
 
 
