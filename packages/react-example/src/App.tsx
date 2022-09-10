@@ -95,6 +95,7 @@ class App extends TanfuView {
 
   template(): TemplateObject {
     const app = html`
+    <div t-id="sss">sss</div>
     <div t-id="element" t-number:height="100">hhh</div>
     <modal-view t-model.value="visible" t-model.change="onCancel" t-id="modalView" />
     `

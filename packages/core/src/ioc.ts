@@ -85,7 +85,7 @@ export default class IoCContainer {
         // 通过@Inject注入
         const injectParameters: InjectMetadata = Reflect.getMetadata(TANFU_INJECT, Type.prototype) ?? {};
 
-        const prototype: Record<string, any> = {}
+        const prototype: Record<string, any> = Reflect.getPrototypeOf(instance) as Record<string, any>
 
         // 解析构造函数
         constructorParameters.forEach((name, index) => {
@@ -98,7 +98,7 @@ export default class IoCContainer {
             const name = injectParameters[propertyName]
             prototype[propertyName] = this.getInjectableProvider(name)
         });
-        Reflect.setPrototypeOf(Type.prototype, prototype)
+        Reflect.setPrototypeOf(instance, prototype)
     }
 
     private getClass(Type: Type<any>) {

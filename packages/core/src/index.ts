@@ -19,6 +19,7 @@ export { default as EventListener } from './decorators/event-listener'
 export { default as Engine } from './decorators/engine'
 export { default as html } from './html'
 export { default as TanfuPlugin } from './plugin'
+export { default as TanfuController } from './controller'
 
 
 

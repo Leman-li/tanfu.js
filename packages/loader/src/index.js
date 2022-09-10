@@ -8,7 +8,6 @@ module.exports = function (source) {
     if (this.cacheable) {
         this.cacheable()
     }
-    console.log('加载了loader')
     var ast = parse(source, {
         // parse in strict mode and allow module declarations
         sourceType: "module",
