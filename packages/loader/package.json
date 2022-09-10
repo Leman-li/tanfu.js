@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "tanfu-loader",
   "version": "1.0.0",
   "scripts": {
@@ -11,9 +10,12 @@
     "prettier": "prettier --write \"**/*.{js,jsx,tsx,ts,less,md,json}\"",
     "test": "umi-test",
     "test:coverage": "umi-test --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "info": "npm info --registry=https://registry.npmjs.org",
+    "tpublish": "npm publish --registry=https://registry.npmjs.org"
   },
   "module": "es/index.js",
+  "main": "lib/index.js",
   "typings": "es/index.d.ts",
   "gitHooks": {
     "pre-commit": "lint-staged"
