@@ -22,11 +22,38 @@ A development framework with high scalability, easy to customize development, bu
 ```bash
 npm install tanfu-core --save
 npm install tanfu-react-plugin --save
+npm install tanfu-loader --save
 ```
 
 ```bash
 yarn add tanfu-core
 yarn add tanfu-react-plugin
+yarn add tanfu-loader
+```
+
+## Configuration
+
+1. The tsconfig.json file needs the following Settings to support decorators and metadata
+
+```json
+  {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+     ...
+  }
+```
+2. Webpack loader needs to add ```tanfu-loader```, used to resolve the relevant ```js | ts | tsx``` composite file
+
+```js
+   rules : [
+    {
+      test: /\.(js|ts|tsx)$/,
+      loader: 'tanfu-loader',
+      exclude: /node_modules/,
+    },
+    ...
+   ]
+  
 ```
 
 ## Usage
@@ -35,7 +62,7 @@ yarn add tanfu-react-plugin
 import Tanfu, { TanfuView, html, Component } from 'tanfu-core'
 import TanfuReactPlugin from 'tanfu-react-plugin'
 
-// 在App入口加载插件即可
+// Just load the plugin at the entrance of the App
 Tanfu.use(new TanfuReactPlugin())
 
 @Component()
@@ -46,24 +73,24 @@ class RootView extends TanfuView {
   }
 }
 
+const App = Tanfu.createApp(RootView)
 
-export default ()=>Tanfu.mountView(RootView)
+export default () => App
 
 ```
 
 ## How do I add logical control to a view
 
-```js
-// 创建一个Controller
-import { Controller, EventListener, Inject, Engine } from 'tanfu-core'
-@Controller()
-class RootController {
+```jsx
 
-  @Inject('engine') engine: Engine
+// You need to create a Controller
+import { Controller, EventListener, TanfuController } from 'tanfu-core'
+@Controller()
+class RootController extends TanfuController {
 
   @EventListener('elementA','onClick')
    handleClick(){
-     engine.setState({
+     this.setState({
        elementA: {
          text: 1
        }
@@ -87,7 +114,9 @@ class RootView extends TanfuView {
 }
 
 
-export default ()=>Tanfu.mountView(RootView)
+const App = Tanfu.createApp(RootView)
+
+export default () => App
 
 ```
 
