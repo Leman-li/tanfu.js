@@ -111,7 +111,7 @@ function ElementA = ({text, onClick}) => {
 class RootView extends TanfuView {
 
   template(){
-    return html`<element-a element-id="element-a"/>`
+    return html`<element-a element-id="elementA"/>`
   }
 }
 
