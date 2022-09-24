@@ -8,7 +8,7 @@ import { HideDirective, ModelDirective } from './directives';
 
 
 class TanfuReactAdapter extends TanfuAdapter {
-    createRenderView(view: any, props: any, type: number, engine?: CoreEngine) {
+    createElement(view: any, props: any, type: number, engine?: CoreEngine) {
         const tId = props?.['t-id']
         if (tId) props['tId'] = tId;
         delete props?.['t-id']

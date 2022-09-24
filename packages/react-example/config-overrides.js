@@ -45,7 +45,6 @@ module.exports = override(
       }
     }
     )
-    console.log(JSON.stringify(config.module.rules.find(item => item.loader === 'tanfu-loader'), null, 2))
     return config;
   }
 );

@@ -18,48 +18,59 @@ export default class Tanfu {
     private adapter!: TanfuAdapter
     public directives: Map<string, TanfuDirective> = new Map()
 
+    /** 获取设配器 */
     getAdapter() {
         return this.adapter
     }
 
-
+    /** 获取声明 */
     getDeclarations() {
         return this.declarations
     }
 
-
+    /** 添加声明 */
     addDeclarations(declarations: Array<{ name: string, value: any }>) {
         declarations.forEach(({ name, value }) => {
             this.declarations.push({ name, value })
         })
     }
 
+    /** 添加适配器 */
     addAdapter(adapter: TanfuAdapter) {
         this.adapter = adapter
     }
 
+    /** 定义指令 */
     directive(name: string, directive: TanfuDirective) {
         this.directives.set(name, directive)
     }
 
+    /** 定义指令 */
     static directive(name: string, directive: TanfuDirective) {
         getTanfu().directive(name, directive)
     }
 
-
+    /** 使用插件 */
     static use(plugin: Plugin) {
         if (typeof plugin === 'function') plugin(getTanfu())
         else plugin?.install(getTanfu())
     }
 
+    /** 判断是否为TanfuView */
     static isTanfuView(View: any) {
         return isObject(View) && Reflect.getMetadata(TANFU_COMPONENT_WATER_MARK, View)
     }
 
+    /** 创建应用 */
     static createApp(View: typeof TanfuView) {
-        return getTanfu().adapter.createRenderView(View, {}, -1)
+        return Tanfu.createElement(View, {}, -1)
     }
 
+    static createElement(View: any, props: any, type: number, engine?: CoreEngine): any {
+        return getTanfu().adapter.createElement(View, props, type, engine)
+    }
+
+    /** 转换Tanfu视图 */
     static translateTanfuView(View: typeof TanfuView, props?: any): {
         view: RenderView,
         engine: CoreEngine
@@ -138,6 +149,6 @@ function convertTemplate(template: TemplateObject[]) {
         if (!Tanfu.isTanfuView(View)) delete props?.$slot
         if (props) props['children'] = convertTemplate(dealChildren)
         if (!props?.children?.length) delete props?.['children']
-        return getTanfu().getAdapter().createRenderView(type === Node.TEXT_NODE ? value : View, props, type, engine)
+        return getTanfu().getAdapter().createElement(type === Node.TEXT_NODE ? value : View, props, type, engine)
     })
 }
