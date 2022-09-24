@@ -7,7 +7,7 @@
 [![NPM Stars](https://img.shields.io/github/stars/Leman-li/tanfu.js)](https://github.com/Leman-li/tanfu.js)
 [![LICENSE](https://img.shields.io/github/license/Leman-li/tanfu.js?logo=MIT)](https://github.com/Leman-li/tanfu.js)
 
-一个高扩展、易于定制化开发、业务逻辑与视图分离开发框架
+一个高扩展、易于定制化开发、业务逻辑与视图分离开发框架 (配合Typescript)
 
 ---
 
@@ -23,12 +23,40 @@
 ```bash
 npm install tanfu-core --save
 npm install tanfu-react-plugin --save
+npm install tanfu-loader --save
 ```
 
 ```bash
 yarn add tanfu-core
 yarn add tanfu-react-plugin
+yarn add tanfu-loader
 ```
+
+## 配置
+
+1. tsconfig.json 文件中需要做如下设置，用来支持装饰器和元数据
+
+```json
+  {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+     ...
+  }
+```
+2. Webpack 的 loader 需要添加 tanfu-loader，用来解析相关的 js|ts|tsx 文件
+
+```js
+   rules : [
+    {
+      test: /\.(js|ts|tsx)$/,
+      loader: 'tanfu-loader',
+      exclude: /node_modules/,
+    },
+    ...
+   ]
+  
+```
+
 
 ## 示例
 
@@ -47,8 +75,9 @@ class RootView extends TanfuView {
   }
 }
 
+const App = Tanfu.createApp(RootView)
 
-export default ()=> Tanfu.mountView(RootView)
+export default () => App
 
 
 ```
@@ -57,15 +86,13 @@ export default ()=> Tanfu.mountView(RootView)
 
 ```js
 // 创建一个Controller
-import { Controller, EventListener, Inject, Engine } from 'tanfu-core'
+import { Controller, EventListener, TanfuController } from 'tanfu-core'
 @Controller()
-class RootController {
-
-  @Inject('engine') engine: Engine
+class RootController extends TanfuController {
 
   @EventListener('elementA','onClick')
    handleClick(){
-     engine.setState({
+     this.setState({
        elementA: {
          text: 1
        }
@@ -89,7 +116,9 @@ class RootView extends TanfuView {
 }
 
 
-export default ()=>Tanfu.mountView(RootView)
+const App = Tanfu.createApp(RootView)
+
+export default () => App
 
 ```
 
