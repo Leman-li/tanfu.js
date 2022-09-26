@@ -18,7 +18,9 @@ function filterRepetition<T>(arr: T[], filterFn?: (value: T, index: number) => b
     return arr.filter(_fn)
 }
 
-function getName(name: string) {
+function getName(declaration: any) {
+    const metaData: ComponentMetadata = Reflect.getMetadata(TANFU_COMPONENT, declaration);
+    const name = metaData?.name || declaration?.name
     const returnName = name?.replace(/([A-Z])/g, '-$1').toLowerCase();
     return returnName.startsWith('-') ? returnName.slice(1) : returnName
 }
@@ -33,7 +35,7 @@ export default function Component(options?: ComponentOptions): ClassDecorator {
         metaData.controllers = filterRepetition((metaData.controllers ?? []).concat(controllers))
         metaData.providers = filterRepetition((metaData.providers ?? []).concat(providers))
         const mergeDeclarations: Array<{ name: string, value: any }> = (metaData.declarations ?? []).concat(declarations.map(declaration => ({
-            name: getName(declaration.name),
+            name: getName(declaration),
             value: declaration.value ?? declaration
         })
         ))
