@@ -11,7 +11,7 @@ type ClassProviders = Type<any> | {provide: Type<any> | string, useClass: Type<a
 
 export type Providers = Array<ValueProvider | ClassProviders>
 export type Controllers = Type<any> []
-export type Declarations = Array<{ name: string, value: any }>
+export type Declarations = Record<string, any>
 
 
 

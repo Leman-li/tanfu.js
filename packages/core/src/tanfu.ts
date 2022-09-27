@@ -7,6 +7,7 @@ import { ComponentMetadata } from "./decorators/component"
 import { TemplateObject } from "./html"
 import { isObject } from "./util"
 import TanfuDirective from "./directive"
+import { Declarations } from "./ioc"
 
 export type RenderView = any
 
@@ -14,7 +15,7 @@ export type RenderView = any
 
 export default class Tanfu {
 
-    private readonly declarations: Array<{ name: string, value: any }> = []
+    private readonly declarations: Declarations = {}
     private adapter!: TanfuAdapter
     public directives: Map<string, TanfuDirective> = new Map()
 
@@ -29,9 +30,9 @@ export default class Tanfu {
     }
 
     /** 添加声明 */
-    addDeclarations(declarations: Array<{ name: string, value: any }>) {
-        declarations.forEach(({ name, value }) => {
-            this.declarations.push({ name, value })
+    addDeclarations(declarations: Declarations) {
+        Object.keys(declarations).forEach(name => {
+            this.declarations[name] = declarations[name]
         })
     }
 
@@ -78,7 +79,7 @@ export default class Tanfu {
         const metaData: ComponentMetadata = Reflect.getMetadata(TANFU_COMPONENT, View)
         const view = new View()
         const { template: templateFn } = view
-        const declarations = [...metaData?.declarations ?? [], ...getTanfu().getDeclarations()]
+        const declarations = {...metaData?.declarations ?? {}, ...getTanfu().getDeclarations()}
         const engine = new CoreEngine(
             Zone.current.get('engine'),
             metaData.providers ?? [],

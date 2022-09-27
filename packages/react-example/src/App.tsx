@@ -33,10 +33,9 @@ class ModalController {
 
 @Component({
   controllers: [ModalController],
-  declarations: [{
-    name: 'ant-modal',
-    value: Modal
-  }]
+  declarations: {
+    'ant-modal': Modal
+  }
 })
 class ModalView1 extends TanfuView {
 
@@ -83,12 +82,25 @@ class ModalView extends ModalView1 {
   }
 }
 
+// ModalView.displayName = 'ModalView'
 
+function AReactView(){
+  return <div>sdfafdsaf</div>
+}
+
+// @ts-ignore
+console.log(AReactView.name,AReactView.displayName)
 
 @Component({
   controllers: [AppController],
   providers: [AppRepository],
-  declarations: [AView, VirtualList, { name: 'list-item', value: Item }, ModalView]
+  declarations: {
+    AView,
+    ModalView,
+    AReactView
+  }
+  
+  //[AView, VirtualList, { name: 'list-item', value: Item }, ModalView, AReactView]
 })
 class App extends TanfuView {
 
@@ -98,6 +110,7 @@ class App extends TanfuView {
     <div t-id="sss">sss</div>
     <div t-id="element" t-number:height="100">hhh</div>
     <modal-view t-model.value="visible" t-model.change="onCancel" t-id="modalView" />
+    <a-react-view/>
     `
     console.log(app)
     return app

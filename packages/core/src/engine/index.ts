@@ -10,7 +10,7 @@ import { TemplateObject } from '../html';
 /** 核心引擎 */
 export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMetadataInject<VM> {
 
-    private readonly declarations: Map<string, any> = new Map()
+    private readonly declarations: Declarations = {}
     private readonly parentEngine!: CoreEngine | null | undefined
     private readonly childViews = new Map<string, any>();
     private hostView!: TanfuView;
@@ -49,9 +49,9 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
     }
 
     /** 添加声明 */
-    addDeclarations(declarations: Declarations) {
-        declarations.forEach(({ name, value }) => {
-            this.declarations.set(name, value)
+    addDeclarations(declarations: Declarations = {}) {
+        Object.keys(declarations).forEach(name => {
+            this.declarations[name] = declarations[name]
         })
     }
 
@@ -73,7 +73,7 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
 
     /** 找到声明 */
     getDeclaration(name: string): any {
-        return this.declarations.get(name) ?? this.parentEngine?.getDeclaration(name)
+        return this.declarations[name] ?? this.parentEngine?.getDeclaration(name)
     }
 
 
