@@ -106,7 +106,7 @@ function ElementA = ({text, onClick}) => {
 
 @Component({
   controllers: [RootController],
-  declarations: [ElementA]
+  declarations: { ElementA }
 })
 class RootView extends TanfuView {
 
