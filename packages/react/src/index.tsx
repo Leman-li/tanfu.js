@@ -1,14 +1,15 @@
-import React, { useContext, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import get from 'lodash.get'
 import reactDeclarations from './declarations'
-import Tanfu, { CoreEngine, TanfuAdapter, TanfuPlugin } from 'tanfu-core';
+import Tanfu, { CoreEngine, TanfuAdapter, TanfuPlugin, TanfuView } from 'tanfu-core';
 import { HOST_LIFECYCLE_ID, INNER_DIRECTIVES, HOST_T_ID } from 'tanfu-core/es/constants'
 import { nanoid } from 'nanoid';
 import { HideDirective, ModelDirective } from './directives';
+import { ElementType, Element as TanfuElement, ElementProps } from 'tanfu-core/es/types.js'
 
 
 class TanfuReactAdapter extends TanfuAdapter {
-    createElement(view: any, props: any, type: number, engine?: CoreEngine) {
+    createElement(view: TanfuElement, props: ElementProps, type: ElementType, engine?: CoreEngine) {
         const tId = props?.['t-id']
         if (tId) props['tId'] = tId;
         delete props?.['t-id']
@@ -29,13 +30,21 @@ class TanfuReactAdapter extends TanfuAdapter {
             if (tId) RenderUI = createElement(RenderUI, engine)
             return <RenderUI key={nanoid()} {...reactProps} />
         }
-        if (type === Node.TEXT_NODE) {
+        if (type === ElementType.TEXT_NODE) {
             return view
-        } else if (type === Node.ELEMENT_NODE && view) {
+        } else if (type === ElementType.ELEMENT_NODE && view) {
             if (tId) RenderUI = createElement(view, engine)
             return <RenderUI key={nanoid()} {...reactProps} />
         }
         return <React.Fragment key={nanoid()}></React.Fragment>;
+    }
+}
+
+export class TanfuReactView extends TanfuView {
+
+    /** 使用此静态函数可以将其转化为React.ReactElement */
+    static React(props: ElementProps): React.ReactElement{
+        return Tanfu.createElement(this, props)
     }
 }
 
