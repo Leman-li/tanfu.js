@@ -1,9 +1,8 @@
 import CoreEngine from "./engine";
-import Tanfu from "./tanfu";
-
+import { ElementProps, ElementType, RenderElement } from "./types";
 export default class TanfuAdapter {
 
-    createElement(View: any, props: any, type: number, engine?: CoreEngine): any {
+    createElement(View: Element, props: ElementProps, type: ElementType, engine?: CoreEngine): RenderElement {
 
     }
 }

@@ -8,9 +8,7 @@ import { TemplateObject } from "./html"
 import { isObject } from "./util"
 import TanfuDirective from "./directive"
 import { Declarations } from "./ioc"
-
-export type RenderView = any
-
+import { ElementType, Element, ElementProps, RenderElement } from "./types"
 
 
 export default class Tanfu {
@@ -63,23 +61,23 @@ export default class Tanfu {
     }
 
     /** 创建应用 */
-    static createApp(View: typeof TanfuView) {
-        return Tanfu.createElement(View, {}, -1)
+    static createApp(View: typeof TanfuView): RenderElement {
+        return Tanfu.createElement(View)
     }
 
-    static createElement(View: any, props: any, type: number, engine?: CoreEngine): any {
+    static createElement(View: Element, props: ElementProps = {}, type: ElementType = ElementType.ELEMENT_NODE, engine?: CoreEngine): RenderElement {
         return getTanfu().adapter.createElement(View, props, type, engine)
     }
 
     /** 转换Tanfu视图 */
     static translateTanfuView(View: typeof TanfuView, props?: any): {
-        view: RenderView,
+        view: RenderElement,
         engine: CoreEngine
     } {
         const metaData: ComponentMetadata = Reflect.getMetadata(TANFU_COMPONENT, View)
         const view = new View()
         const { template: templateFn } = view
-        const declarations = {...metaData?.declarations ?? {}, ...getTanfu().getDeclarations()}
+        const declarations = { ...metaData?.declarations ?? {}, ...getTanfu().getDeclarations() }
         const engine = new CoreEngine(
             Zone.current.get('engine'),
             metaData.providers ?? [],
@@ -150,6 +148,6 @@ function convertTemplate(template: TemplateObject[]) {
         if (!Tanfu.isTanfuView(View)) delete props?.$slot
         if (props) props['children'] = convertTemplate(dealChildren)
         if (!props?.children?.length) delete props?.['children']
-        return getTanfu().getAdapter().createElement(type === Node.TEXT_NODE ? value : View, props, type, engine)
+        return getTanfu().getAdapter().createElement(type === Node.TEXT_NODE ? value : View, { ...props }, type, engine)
     })
 }
