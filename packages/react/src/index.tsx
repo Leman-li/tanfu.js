@@ -6,8 +6,6 @@ import { HOST_LIFECYCLE_ID, INNER_DIRECTIVES, HOST_T_ID } from 'tanfu-core/es/co
 import { nanoid } from 'nanoid';
 import { HideDirective, ModelDirective } from './directives';
 import { ElementType, Element as TanfuElement, ElementProps } from 'tanfu-core/es/types.js'
-
-
 class TanfuReactAdapter extends TanfuAdapter {
     createElement(view: TanfuElement, props: ElementProps, type: ElementType, engine?: CoreEngine) {
         const tId = props?.['t-id']
@@ -23,8 +21,9 @@ class TanfuReactAdapter extends TanfuAdapter {
         })
         let RenderUI = view;
         if (Tanfu.isTanfuView(view)) {
+            const currentZone = Zone.current
             RenderUI = function (props: any) {
-                const { view: ui, engine: tanfuEngine } = useMemo(() => Tanfu.translateTanfuView(view, props), [])
+                const { view: ui, engine: tanfuEngine } = useMemo(() => currentZone.run<ReturnType<typeof Tanfu.translateTanfuView>>(() => Tanfu.translateTanfuView(view, props)), [])
                 return <ReactView props={props} engine={tanfuEngine} children={ui} />
             }
             if (tId) RenderUI = createElement(RenderUI, engine)
@@ -43,7 +42,7 @@ class TanfuReactAdapter extends TanfuAdapter {
 export class TanfuReactView extends TanfuView {
 
     /** 使用此静态函数可以将其转化为React.ReactElement */
-    static React(props: ElementProps): React.ReactElement{
+    static React(props: ElementProps): React.ReactElement {
         return Tanfu.createElement(this, props)
     }
 }

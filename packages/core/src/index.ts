@@ -17,7 +17,7 @@ export { default as LifeCycle, HostLifeCycle } from './decorators/lifecycle'
 export { default as WatchElement, WatchHostElement } from './decorators/watch-element'
 export { default as EventListener } from './decorators/event-listener'
 export { default as Engine } from './decorators/engine'
-export { default as html } from './html'
+export { default as html, TemplateObject } from './html'
 export { default as TanfuPlugin } from './plugin'
 export { default as TanfuController } from './controller'
 

@@ -5,7 +5,7 @@ import { DispatchEvent } from "./types";
 import { omit } from "./util";
 
 
-export default class TanfuView<P = Record<string, any>, VM extends ViewModel = any> {
+export default class TanfuView<P extends Record<string, any> = Record<string, any>, VM extends ViewModel = any> {
 
     propsToState(props: P): VM {
         // @ts-ignore

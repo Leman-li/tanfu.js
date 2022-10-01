@@ -77,7 +77,8 @@ export default class Tanfu {
         const metaData: ComponentMetadata = Reflect.getMetadata(TANFU_COMPONENT, View)
         const view = new View()
         const { template: templateFn } = view
-        const declarations = { ...metaData?.declarations ?? {}, ...getTanfu().getDeclarations() }
+        let declarations = metaData?.declarations ?? {}
+        if (Zone.current.name === '<root>') declarations = { ...declarations, ...getTanfu().declarations }
         const engine = new CoreEngine(
             Zone.current.get('engine'),
             metaData.providers ?? [],

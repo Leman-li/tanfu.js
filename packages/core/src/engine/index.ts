@@ -73,7 +73,13 @@ export default class CoreEngine<VM extends ViewModel = ViewModel> extends CoreMe
 
     /** 找到声明 */
     getDeclaration(name: string): any {
-        return this.declarations[name] ?? this.parentEngine?.getDeclaration(name)
+        let declaration = this.declarations[name]
+        if (!declaration) {
+            declaration = this.parentEngine?.getDeclaration(name)
+            // 第一次使用之后存在当前engine里
+            if (declaration) this.declarations[name] = declaration
+        }
+        return declaration
     }
 
 
