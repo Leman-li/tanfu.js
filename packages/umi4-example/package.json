@@ -1,0 +1,23 @@
+{
+  "private": true,
+  "author": "leman-li <leman.li.love@qq.com>",
+  "scripts": {
+    "dev": "umi dev",
+    "build": "umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "tanfu-core": "*",
+    "tanfu-loader": "*",
+    "tanfu-react-plugin": "*",
+    "tslib": "^2.4.0",
+    "umi": "^4.0.24"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^4.1.2"
+  }
+}
