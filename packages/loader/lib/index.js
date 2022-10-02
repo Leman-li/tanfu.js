@@ -60,6 +60,30 @@ module.exports = function (source) {
           }
         }, path.scope, null, path.parentPath);
       }
+    },
+    Decorator: function Decorator(path) {
+      var _path$node, _path$node$expression;
+
+      if (t.isIdentifier((_path$node = path.node) === null || _path$node === void 0 ? void 0 : (_path$node$expression = _path$node.expression) === null || _path$node$expression === void 0 ? void 0 : _path$node$expression.callee) && path.node.expression.callee.name === 'Component') {
+        traverse(path.node, {
+          ObjectProperty: function ObjectProperty(_path) {
+            if (t.isIdentifier(_path.node.key) && _path.node.key.name === 'providers' && t.isArrayExpression(_path.node.value)) {
+              var newValue = t.arrayExpression();
+
+              _path.node.value.elements.forEach(function (v) {
+                if (t.isIdentifier(v)) {
+                  newValue.elements.push(ObjectExpression({
+                    provide: v.name,
+                    useClass: v
+                  }));
+                } else newValue.elements.push(v);
+              });
+
+              _path.node.value = newValue;
+            }
+          }
+        }, path.scope, null, path.parentPath);
+      }
     }
   });
 

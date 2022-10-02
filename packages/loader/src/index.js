@@ -20,8 +20,8 @@ module.exports = function (source) {
         ]
     })
     traverse(ast, {
-        ClassMethod(path){
-            if(t.isIdentifier(path.node.key) && path.node.key.name === 'template'){
+        ClassMethod(path) {
+            if (t.isIdentifier(path.node.key) && path.node.key.name === 'template') {
                 traverse(path.node, {
                     TaggedTemplateExpression(_path) {
                         if (t.isIdentifier(_path.node.tag) && _path.node.tag.name === 'html') {
@@ -36,6 +36,26 @@ module.exports = function (source) {
                 }, path.scope, null, path.parentPath)
             }
         },
+        Decorator(path) {
+            if (t.isIdentifier(path.node?.expression?.callee) && path.node.expression.callee.name === 'Component') {
+                traverse(path.node, {
+                    ObjectProperty(_path) {
+                        if (t.isIdentifier(_path.node.key) && _path.node.key.name === 'providers' && t.isArrayExpression(_path.node.value)) {
+                            const newValue = t.arrayExpression()
+                            _path.node.value.elements.forEach(v => {
+                                if (t.isIdentifier(v)) {
+                                    newValue.elements.push(ObjectExpression({
+                                        provide: v.name,
+                                        useClass: v
+                                    }))
+                                } else newValue.elements.push(v)
+                            })
+                            _path.node.value = newValue
+                        }
+                    }
+                }, path.scope, null, path.parentPath)
+            }
+        }
     })
     const { code } = generate(ast, { /* options */ }, source);
     return code
@@ -83,12 +103,12 @@ function convertNodes(nodes) {
                         }
                         const directive = directives.find(o => o.name === _name)
                         // 如果存在，则直接推送
-                        if(directive) directive.descriptors.push(descriptor)
+                        if (directive) directive.descriptors.push(descriptor)
                         else
-                        directives.push({
-                            name: _name,
-                            descriptors: [descriptor]
-                        })
+                            directives.push({
+                                name: _name,
+                                descriptors: [descriptor]
+                            })
 
                     } else props[`${name}`] = value
                 }
