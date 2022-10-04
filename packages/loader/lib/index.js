@@ -84,6 +84,58 @@ module.exports = function (source) {
           }
         }, path.scope, null, path.parentPath);
       }
+    },
+    ClassDeclaration: function ClassDeclaration(classPath) {
+      var isControllerOrProvider = false;
+
+      if (classPath.node.decorators) {
+        classPath.node.decorators.forEach(function (decorator) {
+          var _decorator$expression;
+
+          if (t.isIdentifier(decorator === null || decorator === void 0 ? void 0 : (_decorator$expression = decorator.expression) === null || _decorator$expression === void 0 ? void 0 : _decorator$expression.callee) && ['Controller', 'Injectable'].includes(decorator.expression.callee.name)) {
+            isControllerOrProvider = true;
+          }
+        });
+      }
+
+      if (isControllerOrProvider) {
+        traverse(classPath.node, {
+          ClassMethod: function ClassMethod(methodPath) {
+            if (t.isIdentifier(methodPath.node.key) && methodPath.node.key.name === 'constructor') {
+              var params = [];
+              methodPath.node.params.forEach(function (param) {
+                var _param$decorators, _ref, _ref$typeAnnotation, _param$parameter;
+
+                // 是否存在Inject
+                var existInject = false;
+                (_param$decorators = param.decorators) === null || _param$decorators === void 0 ? void 0 : _param$decorators.forEach(function (decorator) {
+                  var _decorator$expression2;
+
+                  if (t.isIdentifier((_decorator$expression2 = decorator.expression) === null || _decorator$expression2 === void 0 ? void 0 : _decorator$expression2.callee) && decorator.expression.callee.name === 'Inject') {
+                    existInject = true;
+                  }
+                });
+                if (existInject) params.push(param); // 如果param是 Identifier类型则直接param.,如果是TSParameterProperty类型则使用param.parameter.
+                else if (t.isTSTypeReference((_ref = (_param$parameter = param === null || param === void 0 ? void 0 : param.parameter) !== null && _param$parameter !== void 0 ? _param$parameter : param) === null || _ref === void 0 ? void 0 : (_ref$typeAnnotation = _ref.typeAnnotation) === null || _ref$typeAnnotation === void 0 ? void 0 : _ref$typeAnnotation.typeAnnotation)) {
+                  var _param$parameter2;
+
+                  if (t.isIdentifier(((_param$parameter2 = param.parameter) !== null && _param$parameter2 !== void 0 ? _param$parameter2 : param).typeAnnotation.typeAnnotation.typeName)) {
+                    var _param$parameter3, _param$decorators2;
+
+                    // 找到Inject token
+                    var token = ((_param$parameter3 = param === null || param === void 0 ? void 0 : param.parameter) !== null && _param$parameter3 !== void 0 ? _param$parameter3 : param).typeAnnotation.typeAnnotation.typeName.name;
+                    param.decorators = (_param$decorators2 = param.decorators) !== null && _param$decorators2 !== void 0 ? _param$decorators2 : []; // 在参数前加入 @Inject(token)
+
+                    param.decorators.push(t.decorator(t.callExpression(t.identifier('Inject'), [t.stringLiteral(token)])));
+                    params.push(param);
+                  } else params.push(param);
+                } else params.push(param);
+              });
+              methodPath.node.params = params;
+            }
+          }
+        }, classPath.scope, null, classPath.parentPath);
+      }
     }
   });
 
@@ -125,10 +177,10 @@ function convertNodes(nodes) {
         var props = {};
 
         for (var i = 0; i < (attributes === null || attributes === void 0 ? void 0 : attributes.length); i++) {
-          var _ref = attributes.item(i) || {},
-              _ref$name = _ref.name,
-              name = _ref$name === void 0 ? '' : _ref$name,
-              value = _ref.value; // 如果名称以 t- 开头 说明是指令
+          var _ref2 = attributes.item(i) || {},
+              _ref2$name = _ref2.name,
+              name = _ref2$name === void 0 ? '' : _ref2$name,
+              value = _ref2.value; // 如果名称以 t- 开头 说明是指令
 
 
           if (name === null || name === void 0 ? void 0 : name.startsWith('t-')) {

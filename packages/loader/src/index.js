@@ -55,6 +55,48 @@ module.exports = function (source) {
                     }
                 }, path.scope, null, path.parentPath)
             }
+        },
+        ClassDeclaration(classPath) {
+            let isControllerOrProvider = false
+            if (classPath.node.decorators) {
+                classPath.node.decorators.forEach(decorator => {
+                    if (t.isIdentifier(decorator?.expression?.callee) && ['Controller', 'Injectable'].includes(decorator.expression.callee.name)) {
+                        isControllerOrProvider = true;
+                    }
+                })
+            }
+            if (isControllerOrProvider) {
+                traverse(classPath.node, {
+                    ClassMethod(methodPath) {
+                        if (t.isIdentifier(methodPath.node.key) && methodPath.node.key.name === 'constructor') {
+                            let params = []
+                            methodPath.node.params.forEach(param => {
+                                // 是否存在Inject
+                                let existInject = false;
+                                param.decorators?.forEach(decorator => {
+                                    if (t.isIdentifier(decorator.expression?.callee) && decorator.expression.callee.name === 'Inject') {
+                                        existInject = true
+                                    }
+                                })
+                                if (existInject) params.push(param)
+                                // 如果param是 Identifier类型则直接param.,如果是TSParameterProperty类型则使用param.parameter.
+                                else if (t.isTSTypeReference((param?.parameter ?? param)?.typeAnnotation?.typeAnnotation)) {
+                                    if (t.isIdentifier((param.parameter ?? param).typeAnnotation.typeAnnotation.typeName)) {
+                                        // 找到Inject token
+                                        const token = (param?.parameter ?? param).typeAnnotation.typeAnnotation.typeName.name;
+                                        param.decorators = (param.decorators ?? [])
+                                        // 在参数前加入 @Inject(token)
+                                        param.decorators.push(t.decorator(t.callExpression(t.identifier('Inject'), [t.stringLiteral(token)])))
+                                        params.push(param)
+
+                                    } else params.push(param)
+                                } else params.push(param)
+                            })
+                            methodPath.node.params = params
+                        }
+                    }
+                }, classPath.scope, null, classPath.parentPath)
+            }
         }
     })
     const { code } = generate(ast, { /* options */ }, source);
