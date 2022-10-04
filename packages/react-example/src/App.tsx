@@ -6,8 +6,6 @@ import TanfuReactPlugin from 'tanfu-react-plugin';
 import AppController from './app.controller';
 import AppRepository from './app.repository';
 import AView from './components/a-view';
-import VirtualList from './components/virtual-list/index.view';
-import Item from './components/item';
 import 'antd/dist/antd.css';
 import { Modal } from 'antd'
 import type TanfuEngine from 'tanfu-core/es/engine/tanfu-engine';
@@ -20,7 +18,7 @@ class ModalController {
 
   @HostLifeCycle('didMount')
   didMount() {
-    console.log(this.engine)
+    console.log(this, 'ModalController')
   }
 
   @WatchHostElement(['visible'])
@@ -82,14 +80,10 @@ class ModalView extends ModalView1 {
   }
 }
 
-// ModalView.displayName = 'ModalView'
-
 function AReactView(){
   return <div>sdfafdsaf</div>
 }
 
-// @ts-ignore
-console.log(AReactView.name,AReactView.displayName)
 
 @Component({
   controllers: [AppController],
@@ -99,21 +93,17 @@ console.log(AReactView.name,AReactView.displayName)
     ModalView,
     AReactView
   }
-  
-  //[AView, VirtualList, { name: 'list-item', value: Item }, ModalView, AReactView]
 })
 class App extends TanfuView {
 
 
   template(): TemplateObject {
-    const app = html`
+    return html`
     <div t-id="sss">sss</div>
     <div t-id="element" t-number:height="100">hhh</div>
     <modal-view t-model.value="visible" t-model.change="onCancel" t-id="modalView" />
     <a-react-view/>
     `
-    console.log(app)
-    return app
   }
 }
 

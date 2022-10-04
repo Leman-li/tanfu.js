@@ -11,18 +11,14 @@ class A {
 @Controller()
 export default class AppController extends TanfuController {
 
-    @Inject('AppRepository') repository!: AppRepository
+
+
+     constructor(private repository: AppRepository, @Inject('b') readonly b: AppRepository){ super() }
+
 
     @HostLifeCycle('willMount')
     willMount(){
-        console.log('willMount', this.setState)
-        // this.setState({
-        //     'virtual-list':{
-        //         height: 300,
-        //         itemHeight: 50,
-        //         listData: Array(100000).fill(1).map((value, index)=> index)
-        //     }
-        // })
+        console.log('willMount', this.repository)
     }
 
     @EventListener('sss', 'onClick')
