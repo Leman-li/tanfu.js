@@ -1,5 +1,5 @@
 import { HOST_LIFECYCLE_ID, TANFU_ENGINE, TANFU_EVENTLISTENER, TANFU_LIFECYCLE, TANFU_METHOD_ARGS, TANFU_WATCHELEMENT } from "../constants";
-import { findArgsDecoratorIndexs, MethodArgsMetadata, TanfuMethodParamType } from "../decorators/create-method-args-decorator";
+import { findArgsDecoratorValues, TanfuMethodParamType } from "../decorators/create-method-args-decorator";
 import { EventListenerMetadata } from "../decorators/event-listener";
 import { LifeCycleMetadata } from "../decorators/lifecycle";
 import { WatchElementMetadata } from "../decorators/watch-element";
@@ -64,10 +64,10 @@ export default class CoreMetadataInject<VM> extends CoreEventInject<VM> {
                 // @ts-ignore
                 data[tId][listenerName].forEach(methodName => {
                     const fn: any = (...args: any[]) => {
-                        const joinIndexes = findArgsDecoratorIndexs(TanfuMethodParamType.T_ID, controller.constructor, methodName)
+                        const values = findArgsDecoratorValues(TanfuMethodParamType.T_ID, controller.constructor, methodName)
                         const tempArgs = [...args]
-                        joinIndexes?.forEach(index => {
-                            tempArgs.splice(index, 0, tId)
+                        values?.forEach(value => {
+                            tempArgs.splice(value.index, 0, tId)
                         })
                         const bindFn = controller?.[methodName]?.bind?.(controller, ...tempArgs)
                         return bindFn?.()

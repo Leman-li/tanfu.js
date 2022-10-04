@@ -1,16 +1,17 @@
 
 import { DESIGN_PARAMTERS, DESIGN_PARAMTYPES, TANFU_EVENTLISTENER, TANFU_INJECT, TANFU_INJECTABLE_WATER_MARK, TANFU_WATCHELEMENT } from "./constants";
-import { InjectMetadata } from "./decorators/inject";
+import { findArgsDecoratorValues, TanfuMethodParamType } from "./decorators/create-method-args-decorator";
+import Inject, { InjectMetadata } from "./decorators/inject";
 import { Type } from "./types";
 import TanfuView from "./view";
 
 
 type ValueProvider = { provide: string, useValue: any }
 
-type ClassProviders = Type<any> | {provide: Type<any> | string, useClass: Type<any>}
+type ClassProviders = Type<any> | { provide: Type<any> | string, useClass: Type<any> }
 
 export type Providers = Array<ValueProvider | ClassProviders>
-export type Controllers = Type<any> []
+export type Controllers = Type<any>[]
 export type Declarations = Record<string, any>
 
 
@@ -78,20 +79,11 @@ export default class IoCContainer {
             if (type === ProviderType.VALUE || this.isInjectable(value)) this.injectableProviders.set(name, { value, type })
         })
         const Type = instance?.constructor
-        // 构造函数注入
-        const constructorParameterTypes = Reflect.getMetadata(DESIGN_PARAMTYPES, Type)
-        const constructorParameters: string[] = Reflect.getMetadata(DESIGN_PARAMTERS, Type) ?? []
 
         // 通过@Inject注入
         const injectParameters: InjectMetadata = Reflect.getMetadata(TANFU_INJECT, Type.prototype) ?? {};
 
         const prototype: Record<string, any> = Reflect.getPrototypeOf(instance) as Record<string, any>
-
-        // 解析构造函数
-        constructorParameters.forEach((name, index) => {
-            const Type = constructorParameterTypes?.[index]
-            if (Type?.constructor) prototype[name] = this.getClass(Type)
-        });
 
         // 解析 @Inject注入的
         Object.keys(injectParameters).forEach(propertyName => {
@@ -105,7 +97,12 @@ export default class IoCContainer {
         let instance = this.cache.get(Type.name)
         // 如果存在则直接获取缓存
         if (instance) return instance;
-        instance = createProxy(new Type())
+        const values = findArgsDecoratorValues(TanfuMethodParamType.TANFU_CONSTRUCTOR_INJECT, Type, 'constructor')
+        const tempArgs: any[] = []
+        values?.forEach(value => {
+            value.data && tempArgs.splice(value.index, 0, this.getInjectableProvider(value.data as string))
+        })
+        instance = createProxy(new Type(...tempArgs))
         this.inject(instance, [])
         this.cache.set(Type.name, instance)
         return instance

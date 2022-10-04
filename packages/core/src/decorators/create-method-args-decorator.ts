@@ -2,28 +2,30 @@ import { TANFU_METHOD_ARGS } from "../constants";
 
 export enum TanfuMethodParamType {
     TANFU_EVENT,
+    TANFU_CONSTRUCTOR_INJECT,
     T_ID
 }
 
 type ParamData = string | number | object
 
-export type MethodArgsMetadata = {
-    [key: string]: {
-        index: number,
-        data: ParamData
-    }
+
+export type MethodArgsMetadataValue = {
+    index: number,
+    data?: ParamData
 }
 
+export type MethodArgsMetadata = Record<string, MethodArgsMetadataValue>
+
 /** 找到参数装饰器的索引 */
-export function findArgsDecoratorIndexs(paramtype: TanfuMethodParamType, target: Object, methodName: string) {
+export function findArgsDecoratorValues(paramtype: TanfuMethodParamType, target: Object, methodName: string) {
     const md: MethodArgsMetadata = Reflect.getMetadata(TANFU_METHOD_ARGS, target, methodName);
-    const returnIndexes: number[] = []
+    const _return: Array<MethodArgsMetadataValue> = []
     Object.keys(md ?? {}).forEach(key => {
         if (key.startsWith(`${paramtype}`)) {
-            returnIndexes.push(md[key].index)
+            _return.push(md[key])
         }
     })
-    return returnIndexes.sort((a, b) => b - a);
+    return _return.sort((a, b) => b.index - a.index);
 }
 
 function assignMetadata(
@@ -45,8 +47,11 @@ function assignMetadata(
 export function createMethodArgsDecorator(paramtype: TanfuMethodParamType) {
     return (data?: ParamData): ParameterDecorator =>
         (target, key, index) => {
+            let _target = target;
+            // 如果key为constructor说明是构造函数的参数装饰器，否则为一般函数的参数装饰器
+            if (key !== 'constructor') _target = target.constructor
             const args =
-                Reflect.getMetadata(TANFU_METHOD_ARGS, target.constructor, key) || {};
+                Reflect.getMetadata(TANFU_METHOD_ARGS, _target, key) || {};
             Reflect.defineMetadata(
                 TANFU_METHOD_ARGS,
                 assignMetadata(
@@ -55,7 +60,7 @@ export function createMethodArgsDecorator(paramtype: TanfuMethodParamType) {
                     index,
                     data,
                 ),
-                target.constructor,
+                _target,
                 key,
             );
         };
