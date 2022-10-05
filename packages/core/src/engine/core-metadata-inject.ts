@@ -6,9 +6,10 @@ import { WatchElementMetadata } from "../decorators/watch-element";
 import IoCContainer, { Controllers, Providers } from "../ioc";
 import CoreEventInject from "./core-event-inject";
 import TanfuEngine from "./tanfu-engine";
+import { ViewModel } from "./types";
 
 
-export default class CoreMetadataInject<VM> extends CoreEventInject<VM> {
+export default class CoreMetadataInject<VM extends ViewModel> extends CoreEventInject<VM> {
     public ioc!: IoCContainer;
     public props: Record<string, any> = {}
 

@@ -1,9 +1,9 @@
 import TanfuHook from "../tanfu-hook"
 import CoreUpdateState from "./core-update-state"
-import { ElementId, PickFunction, PickNotFunction, StringKeys } from "./types"
+import { ElementId, PickFunction, PickNotFunction, StringKeys, ViewModel } from "./types"
 
 
-export default class CoreEventInject<VM> extends CoreUpdateState<VM> {
+export default class CoreEventInject<VM extends ViewModel> extends CoreUpdateState<VM> {
     public didMountHook: TanfuHook = new TanfuHook(this.zone)
     public updateHook: TanfuHook = new TanfuHook(this.zone)
     public willUnmountHook: TanfuHook = new TanfuHook(this.zone)

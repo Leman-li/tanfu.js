@@ -1,5 +1,5 @@
 import TanfuHook from "../tanfu-hook";
-import { ElementId, PickNotFunction, SetStatesAction } from "./types";
+import { ElementId, PickNotFunction, SetStatesAction, ViewModel } from "./types";
 import get from 'lodash.get'
 import set from 'lodash.set'
 import { produce } from 'immer'
@@ -22,7 +22,7 @@ export function ignoreUpdate(fn: () => void) {
     ignore_update_flag = false;
 }
 
-export default class CoreUpdateState<VM> {
+export default class CoreUpdateState<VM extends ViewModel> {
     public zone: Zone = Zone.current.fork({
         name: String(Date.now()),
         properties: {
